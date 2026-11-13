@@ -3,839 +3,776 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <link rel="manifest" href="manifest.json" />
+  <title>Tulsi Farsan Shop Diary - Billing, Festival Notes & Cloud Sync</title>
   <meta name="theme-color" content="#D32F2F" />
-  <title>Tulsi Farsan — Digital Shop Diary & Festival Tracker</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="manifest" href="./manifest.json" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FAF6EE',
+            tulsiRed: '#D32F2F',
+            tulsiDarkRed: '#9A1B1B',
+            tulsiGold: '#D97706',
+            tulsiLightGold: '#FEF3C7'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Poppins', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
   <style>
-    :root {
-      --tulsi-red: #D32F2F;
-      --tulsi-red-dark: #9A1B1B;
-      --tulsi-gold: #F59E0B;
-      --tulsi-cream: #FFFDF7;
-    }
     body {
-      font-family: 'Inter', sans-serif;
       background-color: #FAF6EE;
+      font-family: 'Inter', sans-serif;
       color: #1F2937;
-      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
     }
-    .font-serif-title {
-      font-family: 'Playfair Display', serif;
+    /* Custom Notepad Styling for Festival Notes */
+    .notepad-paper {
+      background-color: #FFFDF9;
+      background-image: linear-gradient(#F3E8D2 1px, transparent 1px);
+      background-size: 100% 2.35rem;
+      border-left: 5px solid #D32F2F;
     }
-    /* Toran Marigold Header Accent */
-    .toran-border {
-      background-image: radial-gradient(circle at 10px -2px, #F59E0B 10px, #EA580C 11px, transparent 12px);
-      background-size: 20px 16px;
-      background-repeat: repeat-x;
-      height: 12px;
+    /* Custom Range Slider */
+    input[type="range"].box-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 10px;
+      background: #FDE68A;
+      border-radius: 999px;
+      outline: none;
+      border: 1px solid #D97706;
     }
-    .gold-gradient {
-      background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 50%, #F59E0B 100%);
-    }
-    .red-header-gradient {
-      background: linear-gradient(135deg, #B71C1C 0%, #D32F2F 60%, #991B1B 100%);
-    }
-    .tap-btn {
-      transition: transform 0.1s ease, box-shadow 0.15s ease;
-    }
-    .tap-btn:active {
-      transform: scale(0.97);
-    }
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #F3EFE6;
-    }
-    ::-webkit-scrollbar-thumb {
+    input[type="range"].box-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
       background: #D32F2F;
-      border-radius: 3px;
+      cursor: pointer;
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    /* Hide scrollbar for horizontal nav on mobile */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #printableReceiptArea, #printableReceiptArea * {
+        visibility: visible;
+      }
+      #printableReceiptArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        box-shadow: none !important;
+      }
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col pb-24 md:pb-8">
+<body class="min-h-screen flex flex-col">
 
-  <!-- TOP HEADER WITH TORAN ACCENT -->
-  <header class="red-header-gradient text-white shadow-lg sticky top-0 z-30 border-b-2 border-amber-400">
-    <div class="toran-border w-full"></div>
-    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+  <!-- TOP NOTIFICATION BANNER (Replaces native alert) -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- TOP SHOP HEADER -->
+  <header class="bg-gradient-to-r from-[#B71C1C] via-[#D32F2F] to-[#B71C1C] text-white shadow-lg sticky top-0 z-30 border-b-4 border-amber-400">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Brand Title & Logo -->
       <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-xl bg-amber-400 text-red-900 flex items-center justify-center font-extrabold text-xl shadow-inner border-2 border-amber-200">
-          TF
+        <div class="w-11 h-11 rounded-xl bg-amber-400 text-red-900 flex items-center justify-center font-display font-extrabold text-2xl shadow-md border-2 border-white">
+          <i class="fa-solid fa-bowl-food"></i>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="font-serif-title text-xl md:text-2xl font-extrabold tracking-wide text-amber-50">TULSI FARSAN</h1>
-            <span id="syncBadge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-900/70 text-emerald-200 border border-emerald-400/40">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Cloud Sync Ready
-            </span>
+            <h1 class="font-display font-extrabold text-lg sm:text-2xl tracking-tight leading-none">TULSI FARSAN</h1>
+            <span class="bg-amber-300 text-red-950 text-[11px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Shop Diary</span>
           </div>
-          <p class="text-xs text-amber-200/90 font-medium">Digital Shop Diary, Saman & Festival Order Tracker</p>
+          <p class="text-xs text-red-100 mt-0.5">Live Counter Billing, Festival Notes & Cloud ERP</p>
         </div>
       </div>
 
-      <!-- Right Action Controls: Role Switcher + Firebase Config -->
-      <div class="flex items-center gap-2">
-        <button id="btnFirebaseSetup" class="tap-btn px-3 py-2 rounded-xl bg-red-950/60 hover:bg-red-950 text-amber-200 border border-amber-400/40 text-xs font-semibold flex items-center gap-1.5">
-          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <!-- Right Action Buttons: Sync Status, Firebase Setup, Counter/Manager Mode -->
+      <div class="flex items-center flex-wrap gap-2">
+        <!-- Sync Status Badge -->
+        <div id="syncStatusBadge" class="flex items-center gap-1.5 bg-red-950/60 border border-red-300/40 px-3 py-1.5 rounded-full text-xs font-semibold">
+          <span id="syncDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="syncText">Local Storage Mode</span>
+        </div>
+
+        <!-- Firebase & APK Setup Button -->
+        <button onclick="openFirebaseModal()" class="bg-amber-400 hover:bg-amber-300 text-red-950 font-bold text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow transition flex items-center gap-1.5 active:scale-95">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
           <span>Firebase & APK Setup</span>
         </button>
 
-        <button id="btnRoleToggle" class="tap-btn px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-red-950 font-bold text-xs shadow flex items-center gap-1.5">
-          <svg id="roleLockIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-          <span id="roleLabel">Counter Mode</span>
+        <!-- Counter Mode / Manager Mode Toggle (PIN 2009) -->
+        <button id="modeToggleBtn" onclick="handleModeToggle()" class="bg-white/15 hover:bg-white/25 border border-white/40 text-white font-bold text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow transition flex items-center gap-1.5 active:scale-95">
+          <i id="modeIcon" class="fa-solid fa-lock text-amber-300"></i>
+          <span id="modeLabel">Counter Mode</span>
         </button>
       </div>
     </div>
 
-    <!-- Desktop Navigation Bar -->
-    <nav class="hidden md:block bg-red-900/90 border-t border-red-800">
-      <div class="max-w-7xl mx-auto px-4 flex items-center gap-1 overflow-x-auto py-1.5">
-        <button data-tab="dashboard" class="nav-tab-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition bg-amber-400 text-red-950 shadow">
-          <span>1. Command Center & Saman</span>
+    <!-- MAIN NAVIGATION BAR -->
+    <div class="bg-[#9A1B1B] border-t border-red-800/80">
+      <div class="max-w-7xl mx-auto px-2 sm:px-6 flex items-center gap-1 overflow-x-auto no-scrollbar py-1.5">
+        <button onclick="switchTab('festivalNotes')" id="tabBtn-festivalNotes" class="tab-btn whitespace-nowrap px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 bg-amber-400 text-red-950 shadow">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          <span>1. Festival Notes & Bill Pad</span>
+          <span class="bg-red-700 text-white text-[10px] px-1.5 py-0.5 rounded-full">NEW</span>
         </button>
-        <button data-tab="daily" class="nav-tab-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition text-amber-100 hover:bg-red-800">
-          <span>2. Daily Walk-In Ledger</span>
+
+        <button onclick="switchTab('counterBilling')" id="tabBtn-counterBilling" class="tab-btn whitespace-nowrap px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 text-red-100 hover:bg-red-800/60">
+          <i class="fa-solid fa-scale-balanced"></i>
+          <span>2. Quick Counter & Raw Saman</span>
         </button>
-        <button data-tab="festivals" class="nav-tab-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition text-amber-100 hover:bg-red-800">
-          <span>3. Festival Orders (4 Utasav)</span>
+
+        <button onclick="switchTab('walkinLedger')" id="tabBtn-walkinLedger" class="tab-btn whitespace-nowrap px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 text-red-100 hover:bg-red-800/60">
+          <i class="fa-solid fa-book-open"></i>
+          <span>3. Daily Walk-In Ledger</span>
         </button>
-        <button data-tab="analytics" class="nav-tab-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition text-amber-100 hover:bg-red-800">
-          <span>4. Sale Tracker & 2x2 Matrix</span>
+
+        <button onclick="switchTab('festivalCrm')" id="tabBtn-festivalCrm" class="tab-btn whitespace-nowrap px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 text-red-100 hover:bg-red-800/60">
+          <i class="fa-solid fa-users-viewfinder"></i>
+          <span>4. Festival Orders & CRM 2026</span>
         </button>
-        <button data-tab="crm" class="nav-tab-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition text-amber-100 hover:bg-red-800">
-          <span>5. Next-Year CRM & Archives</span>
-        </button>
-        <button data-tab="admin" id="desktopAdminTab" class="nav-tab-btn hidden px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition text-amber-300 hover:bg-red-800 ml-auto border border-amber-400/40">
-          <span>★ Manager Menu & Rates</span>
+
+        <button onclick="switchTab('managerMenu')" id="tabBtn-managerMenu" class="tab-btn whitespace-nowrap px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 text-red-100 hover:bg-red-800/60">
+          <i class="fa-solid fa-sliders"></i>
+          <span>5. Manager Menu & Rates</span>
         </button>
       </div>
-    </nav>
+    </div>
   </header>
 
-  <!-- TOAST NOTIFICATION BANNER -->
-  <div id="toastContainer" class="fixed bottom-20 md:bottom-6 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+  <!-- MAIN WORKSPACE CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-5">
 
-  <!-- MAIN CONTENT CONTAINER -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-5 space-y-6">
-
-    <!-- ========================================================== -->
-    <!-- TAB 1: COMMAND CENTER & FESTIVAL SAMAN TRACKER (HOME PAGE) -->
-    <!-- ========================================================== -->
-    <section id="tab-dashboard" class="tab-panel space-y-6">
-      <!-- Quick Rush-Hour Action Bar -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <button id="quickBtnDailySale" class="tap-btn p-5 rounded-2xl bg-[#D32F2F] hover:bg-red-700 text-white shadow-lg border-2 border-red-800 flex items-center justify-between group">
-          <div class="flex items-center gap-4">
-            <div class="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center text-3xl font-extrabold shadow-inner">
-              +
-            </div>
-            <div class="text-left">
-              <span class="text-xs uppercase tracking-wider font-bold text-amber-200 block">Rush-Hour Counter</span>
-              <h2 class="text-xl md:text-2xl font-extrabold">New Daily Walk-In Sale</h2>
-              <p class="text-xs text-red-100 mt-0.5">Khaman, Samosa, Jalebi, Thabdi Peda • Cash / UPI</p>
-            </div>
+    <!-- =================================================================== -->
+    <!-- TAB 1: FESTIVAL NOTES & BILL GENERATOR (REQUESTED FEATURE)          -->
+    <!-- =================================================================== -->
+    <section id="tab-festivalNotes" class="tab-section space-y-6">
+      
+      <!-- Top Control Bar: Select Festival to Change Heading -->
+      <div class="bg-white rounded-2xl p-4 shadow-md border border-amber-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-red-100 text-tulsiRed flex items-center justify-center text-xl font-bold shrink-0">
+            <i class="fa-solid fa-scroll"></i>
           </div>
-          <svg class="w-7 h-7 text-amber-300 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-        </button>
-
-        <button id="quickBtnFestivalOrder" class="tap-btn p-5 rounded-2xl gold-gradient text-red-950 shadow-lg border-2 border-amber-500 flex items-center justify-between group">
-          <div class="flex items-center gap-4">
-            <div class="w-14 h-14 rounded-2xl bg-red-900 text-amber-300 flex items-center justify-center text-2xl font-extrabold shadow">
-              🪔
-            </div>
-            <div class="text-left">
-              <span class="text-xs uppercase tracking-wider font-extrabold text-red-800 block">4 Main Celebrations</span>
-              <h2 class="text-xl md:text-2xl font-extrabold text-red-950">New Festival Advance Order</h2>
-              <p class="text-xs text-red-900/80 font-medium mt-0.5">Rakshabandhan • Ganesh Chaturthi • Navratri • Diwali</p>
-            </div>
-          </div>
-          <svg class="w-7 h-7 text-red-900 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-        </button>
-      </div>
-
-      <!-- Live KPI Summary Row -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-red-100">
-          <p class="text-xs font-bold uppercase text-gray-500">Today's Counter Sales</p>
-          <p id="kpiTodaySales" class="text-2xl md:text-3xl font-extrabold text-[#D32F2F] mt-1">₹0</p>
-          <p id="kpiTodaySplit" class="text-xs text-gray-600 mt-1 font-medium">Cash: ₹0 | UPI: ₹0</p>
-        </div>
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-amber-200">
-          <p class="text-xs font-bold uppercase text-amber-800">Today's Pickups Due</p>
-          <p id="kpiTodayPickups" class="text-2xl md:text-3xl font-extrabold text-amber-600 mt-1">0 Orders</p>
-          <p id="kpiTodayPickupsPending" class="text-xs text-gray-600 mt-1 font-medium">Pending Payment: 0</p>
-        </div>
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-red-100">
-          <p class="text-xs font-bold uppercase text-gray-500">Total Festival Load</p>
-          <p id="kpiTotalFestivalKg" class="text-2xl md:text-3xl font-extrabold text-gray-900 mt-1">0 kg</p>
-          <p class="text-xs text-emerald-700 mt-1 font-semibold">Live Production Aggregate</p>
-        </div>
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-red-100">
-          <p class="text-xs font-bold uppercase text-gray-500">Past CRM Customers</p>
-          <p id="kpiCrmCount" class="text-2xl md:text-3xl font-extrabold text-gray-900 mt-1">0</p>
-          <p class="text-xs text-amber-700 mt-1 font-semibold">15-Day WhatsApp Ready</p>
-        </div>
-      </div>
-
-      <!-- Main Blueprint Section 1: FESTIVAL SAMAN TRACKER (Raw & Finished Goods) + TODAY'S PICKUPS -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- Left 7 Cols: 1. FESTIVAL SAMAN TRACKER -->
-        <div class="lg:col-span-7 bg-white rounded-2xl shadow-md border-2 border-red-800/20 overflow-hidden">
-          <div class="bg-[#D32F2F] text-white px-5 py-3.5 flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <span class="text-[11px] uppercase tracking-wider text-amber-200 font-bold block">Blueprint Module 1</span>
-              <h3 class="text-lg font-extrabold tracking-wide">1. FESTIVAL SAMAN TRACKER (Raw & Finished Goods)</h3>
-            </div>
-            <select id="samanFestivalFilter" class="bg-red-900 text-amber-100 text-xs font-bold px-3 py-2 rounded-xl border border-amber-400/40 focus:outline-none">
-              <option value="ALL">All Upcoming Festivals</option>
-              <option value="Rakshabandhan">Rakshabandhan</option>
-              <option value="Ganesh Chaturthi">Ganesh Chaturthi</option>
-              <option value="Navratri">Navratri (Dussehra Fafda-Jalebi)</option>
-              <option value="Diwali">Diwali</option>
-            </select>
-          </div>
-
-          <div class="p-5 grid grid-cols-1 md:grid-cols-12 gap-5">
-            <!-- Inventory Tracking: Finished Goods to Make -->
-            <div class="md:col-span-7 space-y-2.5">
-              <div class="flex items-center justify-between border-b border-gray-200 pb-2">
-                <h4 class="text-xs font-extrabold uppercase tracking-wider text-red-900">Finished Goods To Prepare</h4>
-                <span class="text-[11px] text-gray-500 font-semibold">Live Order + Target Load</span>
-              </div>
-              <div id="finishedGoodsList" class="space-y-2 max-h-80 overflow-y-auto pr-1"></div>
-            </div>
-
-            <!-- Raw Material Estimate (Sugar, Besan, Mawa, Ghee/Oil) -->
-            <div class="md:col-span-5 bg-amber-50/80 rounded-2xl p-4 border border-amber-200 flex flex-col justify-between">
-              <div>
-                <h4 class="text-xs font-extrabold uppercase tracking-wider text-amber-950 border-b border-amber-200 pb-2">Raw Material (Saman) Estimate</h4>
-                <p class="text-[11px] text-amber-900/80 mt-1 mb-3">Auto-calculated from total finished goods load:</p>
-                <div id="rawMaterialsList" class="space-y-3.5"></div>
-              </div>
-
-              <!-- Quick Stock Alert Box from Blueprint -->
-              <div id="quickStockAlertBox" class="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5">
-                <span class="text-lg leading-none">⚠️</span>
-                <div>
-                  <p class="text-xs font-extrabold text-red-900">Quick Stock Alert</p>
-                  <p id="quickStockAlertText" class="text-[11px] text-red-800 mt-0.5 leading-snug">
-                    Prompt raw stock check for Sugar, Besan & Mawa against current warehouse bags.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right 5 Cols: TODAY'S PICKUPS (Command Center Due List) -->
-        <div class="lg:col-span-5 bg-white rounded-2xl shadow-md border-2 border-amber-500/30 overflow-hidden flex flex-col">
-          <div class="bg-amber-500 text-red-950 px-5 py-3.5 flex items-center justify-between">
-            <div>
-              <span class="text-[11px] uppercase tracking-wider font-extrabold text-red-900 block">Command Center Dispatch</span>
-              <h3 class="text-lg font-extrabold">Today's Pickups & Ready Boxes</h3>
-            </div>
-            <input type="date" id="pickupDateFilter" class="bg-white text-red-950 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-red-900/20 shadow-sm" />
-          </div>
-
-          <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
-            <div id="todaysPickupsList" class="space-y-2.5 max-h-80 overflow-y-auto pr-1"></div>
-            <div class="pt-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-              <span>Tap "Mark Delivered" or "Collect Balance" at pickup</span>
-              <button id="btnViewAllPickups" class="text-[#D32F2F] font-bold hover:underline">All Festival Orders →</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ========================================================== -->
-    <!-- TAB 2: DAILY SALE & LIVE LEDGER (BLUEPRINT 2 & 3)          -->
-    <!-- ========================================================== -->
-    <section id="tab-daily" class="tab-panel hidden space-y-6">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- 2. DAILY SALE: Rapid-Entry Form -->
-        <div class="lg:col-span-5 bg-white rounded-2xl shadow-md border-2 border-red-800/20 overflow-hidden">
-          <div class="bg-[#D32F2F] text-white px-5 py-4 flex items-center justify-between">
-            <div>
-              <span class="text-[11px] uppercase tracking-wider text-amber-200 font-bold block">Blueprint Module 2</span>
-              <h3 class="text-xl font-extrabold">2. DAILY SALE — Rapid Entry</h3>
-            </div>
-            <span class="px-2.5 py-1 rounded-lg bg-red-900 text-amber-200 text-xs font-bold">Walk-In Counter</span>
-          </div>
-
-          <form id="dailySaleForm" class="p-5 space-y-4">
-            <!-- Standard Item Dropdown -->
-            <div>
-              <label class="block text-xs font-extrabold uppercase text-gray-700 mb-1.5">Select Standard Item *</label>
-              <select id="dailyItemSelect" required class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 focus:border-[#D32F2F] focus:outline-none text-base font-bold bg-gray-50">
-              </select>
-            </div>
-
-            <!-- Standard Box / Weight Preset Buttons (Minimal Typing) -->
-            <div>
-              <div class="flex items-center justify-between mb-1.5">
-                <label class="text-xs font-extrabold uppercase text-gray-700">Quick Box / Weight Tap *</label>
-                <span id="dailyUnitRateLabel" class="text-xs font-bold text-[#D32F2F]">Rate: ₹0/kg</span>
-              </div>
-              <div class="grid grid-cols-4 gap-2 mb-2.5">
-                <button type="button" data-qty="0.25" class="qty-preset-btn tap-btn py-2.5 rounded-xl border-2 border-gray-200 font-extrabold text-sm hover:border-[#D32F2F]">250g</button>
-                <button type="button" data-qty="0.5" class="qty-preset-btn tap-btn py-2.5 rounded-xl border-2 border-gray-200 font-extrabold text-sm hover:border-[#D32F2F]">500g</button>
-                <button type="button" data-qty="1" class="qty-preset-btn tap-btn py-2.5 rounded-xl border-2 border-[#D32F2F] bg-red-50 text-[#D32F2F] font-extrabold text-sm">1 kg</button>
-                <button type="button" data-qty="2.5" class="qty-preset-btn tap-btn py-2.5 rounded-xl border-2 border-gray-200 font-extrabold text-sm hover:border-[#D32F2F]">2.5 kg</button>
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-[11px] font-bold text-gray-500 mb-1">Custom Qty (kg or pcs)</label>
-                  <input type="number" id="dailyQtyInput" step="0.05" min="0.05" value="1" required class="w-full px-3.5 py-2.5 rounded-xl border-2 border-gray-200 font-extrabold text-lg focus:border-[#D32F2F] focus:outline-none" />
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-gray-500 mb-1">Calculated Bill (₹)</label>
-                  <input type="number" id="dailyAmountInput" step="1" min="1" required class="w-full px-3.5 py-2.5 rounded-xl border-2 border-amber-300 bg-amber-50 font-extrabold text-lg text-red-900 focus:border-[#D32F2F] focus:outline-none" />
-                </div>
-              </div>
-            </div>
-
-            <!-- Mandatory Payment Method Toggle: DIRECT (CASH) / ONLINE (UPI) -->
-            <div>
-              <label class="block text-xs font-extrabold uppercase text-gray-700 mb-1.5">Payment Method (Mandatory Toggle) *</label>
-              <div class="grid grid-cols-2 gap-3 p-1.5 bg-gray-100 rounded-2xl border border-gray-200">
-                <button type="button" id="payToggleCash" data-pay="DIRECT" class="pay-method-btn tap-btn py-3.5 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 bg-[#D32F2F] text-white shadow">
-                  <span>💵 DIRECT (CASH)</span>
-                </button>
-                <button type="button" id="payToggleUpi" data-pay="ONLINE" class="pay-method-btn tap-btn py-3.5 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 text-gray-700 hover:bg-white">
-                  <span>📱 ONLINE (UPI)</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Sale Date (Defaults to Today, editable for testing / Manager) -->
-            <div class="flex items-center justify-between pt-1">
-              <label class="text-xs font-bold text-gray-600">Sale Date:</label>
-              <input type="date" id="dailyDateInput" required class="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-bold" />
-            </div>
-
-            <button type="submit" class="tap-btn w-full py-4 rounded-2xl bg-[#D32F2F] hover:bg-red-700 text-white font-extrabold text-lg shadow-lg tracking-wide flex items-center justify-center gap-2">
-              <span>SUBMIT & PRINT RECEIPT</span>
-            </button>
-          </form>
-        </div>
-
-        <!-- 3. DAILY PRODUCT DETAILS: Live Ledger -->
-        <div class="lg:col-span-7 bg-white rounded-2xl shadow-md border-2 border-red-800/20 overflow-hidden flex flex-col">
-          <div class="bg-[#D32F2F] text-white px-5 py-4 flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <span class="text-[11px] uppercase tracking-wider text-amber-200 font-bold block">Blueprint Module 3</span>
-              <h3 class="text-xl font-extrabold">3. DAILY PRODUCT DETAILS — Live Ledger</h3>
-            </div>
-            <div class="flex items-center gap-2">
-              <select id="ledgerFilterCategory" class="bg-red-900 text-white text-xs font-bold px-3 py-2 rounded-xl border border-amber-300/30">
-                <option value="ALL">All Categories</option>
-                <option value="Farsan">Farsan Only</option>
-                <option value="Sweet">Sweets Only</option>
-              </select>
-              <select id="ledgerFilterPayment" class="bg-red-900 text-white text-xs font-bold px-3 py-2 rounded-xl border border-amber-300/30">
-                <option value="ALL">Cash + UPI</option>
-                <option value="DIRECT">Direct (Cash)</option>
-                <option value="ONLINE">Online (UPI)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
-            <div id="liveLedgerContainer" class="space-y-2.5 max-h-[460px] overflow-y-auto pr-1"></div>
-
-            <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex flex-wrap items-center justify-between gap-2 text-xs">
-              <span class="font-bold text-amber-950">🔒 Note: Editing or deleting past ledger entries requires Manager PIN (2009).</span>
-              <span id="ledgerCountSummary" class="font-extrabold text-[#D32F2F]">Showing 0 transactions</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ========================================================== -->
-    <!-- TAB 3: FESTIVAL DAYS SECTION (4 MAIN CELEBRATIONS)         -->
-    <!-- ========================================================== -->
-    <section id="tab-festivals" class="tab-panel hidden space-y-6">
-      <!-- 4 Festival Celebration Selector Cards (Matching Blueprint 4) -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-        <button data-festival="Rakshabandhan" class="festival-card-btn tap-btn p-4 rounded-2xl bg-[#D32F2F] text-white border-2 border-amber-400 shadow-md flex flex-col items-center text-center">
-          <span class="text-3xl mb-1">🧵</span>
-          <span class="font-extrabold text-sm md:text-base tracking-wide uppercase">Rakshabandhan</span>
-          <span class="text-[11px] text-amber-200 mt-0.5">Kaju Katri & Penda Boxes</span>
-        </button>
-        <button data-festival="Ganesh Chaturthi" class="festival-card-btn tap-btn p-4 rounded-2xl bg-white text-red-950 border-2 border-amber-300 hover:border-red-600 shadow-sm flex flex-col items-center text-center">
-          <span class="text-3xl mb-1">🐘</span>
-          <span class="font-extrabold text-sm md:text-base tracking-wide uppercase">Ganesh Chaturthi</span>
-          <span class="text-[11px] text-gray-500 mt-0.5">Modak & Motichoor Ladoo</span>
-        </button>
-        <button data-festival="Navratri" class="festival-card-btn tap-btn p-4 rounded-2xl bg-white text-red-950 border-2 border-amber-300 hover:border-red-600 shadow-sm flex flex-col items-center text-center">
-          <span class="text-3xl mb-1">🔱</span>
-          <span class="font-extrabold text-sm md:text-base tracking-wide uppercase">Navratri / Dussehra</span>
-          <span class="text-[11px] text-gray-500 mt-0.5">Fafda, Jalebi & Samosa</span>
-        </button>
-        <button data-festival="Diwali" class="festival-card-btn tap-btn p-4 rounded-2xl bg-white text-red-950 border-2 border-amber-300 hover:border-red-600 shadow-sm flex flex-col items-center text-center">
-          <span class="text-3xl mb-1">🪔</span>
-          <span class="font-extrabold text-sm md:text-base tracking-wide uppercase">Diwali</span>
-          <span class="text-[11px] text-gray-500 mt-0.5">Dryfruit Boxes & Ghughra</span>
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- 4a) PRODUCT DETAIL ENTRY (Festival Advance Order Form) -->
-        <div class="lg:col-span-5 bg-white rounded-2xl shadow-md border-2 border-amber-400 overflow-hidden">
-          <div class="gold-gradient text-red-950 px-5 py-4 border-b border-amber-300 flex items-center justify-between">
-            <div>
-              <span class="text-[11px] uppercase tracking-wider font-extrabold text-red-800 block">Blueprint Module 4a</span>
-              <h3 class="text-xl font-extrabold">a) Product Detail — Advance Order</h3>
-            </div>
-            <span id="activeFestivalBadge" class="px-3 py-1 rounded-full bg-red-900 text-amber-200 text-xs font-extrabold">Rakshabandhan</span>
-          </div>
-
-          <form id="festivalOrderForm" class="p-5 space-y-3.5">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-extrabold uppercase text-gray-700 mb-1">Customer Name *</label>
-                <input type="text" id="festCustName" placeholder="e.g., Rajeshbhai Patel" required class="w-full px-3.5 py-2.5 rounded-xl border-2 border-gray-200 font-bold text-sm focus:border-[#D32F2F] focus:outline-none" />
-              </div>
-              <div>
-                <label class="block text-xs font-extrabold uppercase text-gray-700 mb-1">Mobile Number *</label>
-                <input type="tel" id="festCustPhone" placeholder="98250XXXXX" required class="w-full px-3.5 py-2.5 rounded-xl border-2 border-gray-200 font-bold text-sm focus:border-[#D32F2F] focus:outline-none" />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-extrabold uppercase text-gray-700 mb-1">Sweet / Farsan Item *</label>
-                <select id="festItemSelect" required class="w-full px-3.5 py-2.5 rounded-xl border-2 border-gray-200 font-bold text-sm bg-gray-50 focus:border-[#D32F2F] focus:outline-none">
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-extrabold uppercase text-gray-700 mb-1">Standard Box Size *</label>
-                <select id="festBoxSize" required class="w-full px-3.5 py-2.5 rounded-xl border-2 border-gray-200 font-bold text-sm bg-gray-50 focus:border-[#D32F2F] focus:outline-none">
-                  <option value="0.25">250g Box</option>
-                  <option value="0.5">500g Box</option>
-                  <option value="1" selected>1 kg Family Box</option>
-                  <option value="2">2 kg VIP Gift Box</option>
-                  <option value="5">5 kg Bulk Tray</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-3 gap-3">
-              <div>
-                <label class="block text-xs font-extrabold uppercase text-gray-700 mb-1">No. of Boxes *</label>
-                <input type="number" id="festBoxCount" min="1" value="2" required class="w-full px-3 py-2.5 rounded-xl border-2 border-gray-200 font-extrabold text-base focus:border-[#D32F2F] focus:outline-none" />
-              </div>
-              <div>
-                <label class="block text-xs font-extrabold uppercase text-gray-700 mb-1">Total Value (₹)</label>
-                <input type="number" id="festTotalAmount" required class="w-full px-3 py-2.5 rounded-xl border-2 border-amber-300 bg-amber-50 font-extrabold text-base text-red-900 focus:outline-none" />
-              </div>
-              <div>
-                <label class="block text-xs font-extrabold uppercase text-gray-700 mb-1">Pickup Date *</label>
-                <input type="date" id="festPickupDate" required class="w-full px-2.5 py-2.5 rounded-xl border-2 border-gray-200 font-bold text-xs focus:border-[#D32F2F] focus:outline-none" />
-              </div>
-            </div>
-
-            <!-- Payment Status & Payment Method -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <div>
-                <label class="block text-xs font-extrabold uppercase text-gray-700 mb-1">Payment Status *</label>
-                <select id="festPayStatus" class="w-full px-3 py-2.5 rounded-xl border-2 border-gray-200 font-extrabold text-xs bg-gray-50">
-                  <option value="Advance Paid">✅ Full / Advance Paid</option>
-                  <option value="Pending">⏳ Payment Pending (Pay on Pickup)</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-extrabold uppercase text-gray-700 mb-1">Payment Mode *</label>
-                <select id="festPayMode" class="w-full px-3 py-2.5 rounded-xl border-2 border-gray-200 font-extrabold text-xs bg-gray-50">
-                  <option value="DIRECT">💵 Direct (Cash)</option>
-                  <option value="ONLINE">📱 Online (UPI)</option>
-                </select>
-              </div>
-            </div>
-
-            <button type="submit" class="tap-btn w-full py-3.5 rounded-2xl bg-[#D32F2F] hover:bg-red-700 text-white font-extrabold text-base shadow-lg tracking-wide">
-              + SAVE FESTIVAL ADVANCE ORDER
-            </button>
-          </form>
-        </div>
-
-        <!-- 4b) ACTIVE FESTIVAL ORDERS & 2026 vs 2027 COMPARISON -->
-        <div class="lg:col-span-7 bg-white rounded-2xl shadow-md border-2 border-amber-400 overflow-hidden flex flex-col">
-          <div class="bg-[#D32F2F] text-white px-5 py-4 flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <span class="text-[11px] uppercase tracking-wider text-amber-200 font-bold block">Blueprint Module 4b</span>
-              <h3 class="text-xl font-extrabold">b) Festival Order Book (<span id="festivalListTitle">Rakshabandhan</span>)</h3>
-            </div>
-            <div class="flex items-center gap-2">
-              <span id="festComparisonBadge" class="px-3 py-1 rounded-xl bg-amber-400 text-red-950 text-xs font-extrabold">
-                2026 vs 2027 Load
-              </span>
-            </div>
-          </div>
-
-          <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
-            <div id="festivalOrdersList" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1"></div>
-
-            <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex flex-wrap items-center justify-between gap-2 text-xs">
-              <span id="festivalSummaryStats" class="font-extrabold text-red-950">Total Festival Orders: 0</span>
-              <span class="text-amber-900 font-semibold">Tip: Tap 📞 Call / WhatsApp to confirm pickup slot</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========================================================== -->
-    <!-- TAB 4: SHOP SALE TRACKER & 2x2 FINANCIAL MATRIX            -->
-    <!-- ========================================================== -->
-    <section id="tab-analytics" class="tab-panel hidden space-y-6">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- 5a) NORMAL DAYS CALCULATOR (Date Range Sum Calculator) -->
-        <div class="lg:col-span-6 bg-white rounded-2xl shadow-md border-2 border-red-800/20 overflow-hidden">
-          <div class="bg-[#D32F2F] text-white px-5 py-4 flex items-center justify-between">
-            <div>
-              <span class="text-[11px] uppercase tracking-wider text-amber-200 font-bold block">Blueprint Module 5a</span>
-              <h3 class="text-xl font-extrabold">a) Normal Days — Date-Range Sum Calculator</h3>
-            </div>
-            <span class="px-2.5 py-1 rounded-lg bg-red-900 text-amber-200 text-xs font-bold">Cash vs. UPI</span>
-          </div>
-
-          <div class="p-5 space-y-5">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-gray-50 p-4 rounded-2xl border border-gray-200">
-              <div>
-                <label class="block text-xs font-extrabold uppercase text-gray-600 mb-1">Select Start Date</label>
-                <input type="date" id="calcStartDate" class="w-full px-3.5 py-2.5 rounded-xl border-2 border-gray-300 font-bold text-sm" />
-              </div>
-              <div>
-                <label class="block text-xs font-extrabold uppercase text-gray-600 mb-1">Select End Date</label>
-                <input type="date" id="calcEndDate" class="w-full px-3.5 py-2.5 rounded-xl border-2 border-gray-300 font-bold text-sm" />
-              </div>
-              <div class="sm:col-span-2 flex flex-wrap gap-2 pt-1">
-                <button type="button" data-range="today" class="range-preset-btn tap-btn px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-xs font-bold hover:border-[#D32F2F]">Today</button>
-                <button type="button" data-range="7days" class="range-preset-btn tap-btn px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-xs font-bold hover:border-[#D32F2F]">Last 7 Days</button>
-                <button type="button" data-range="30days" class="range-preset-btn tap-btn px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-xs font-bold hover:border-[#D32F2F]">Last 30 Days</button>
-                <button type="button" data-range="all" class="range-preset-btn tap-btn px-3 py-1.5 rounded-lg bg-red-50 border border-[#D32F2F] text-[#D32F2F] text-xs font-bold">All Recorded Dates</button>
-              </div>
-            </div>
-
-            <!-- Total Output Display Matching Blueprint -->
-            <div class="p-5 rounded-2xl bg-gradient-to-br from-red-900 to-[#D32F2F] text-white text-center shadow-inner">
-              <p class="text-xs uppercase tracking-widest text-amber-200 font-bold">Calculated Sale Sum</p>
-              <p id="normalCalcTotalSum" class="text-3xl md:text-4xl font-extrabold mt-1">₹0</p>
-              <p id="normalCalcTxCount" class="text-xs text-red-100 mt-1">0 walk-in transactions in range</p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div class="p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-200 text-center">
-                <p class="text-xs font-extrabold uppercase text-emerald-900">💵 Direct (Cash) Sales</p>
-                <p id="normalCalcCashSum" class="text-2xl font-extrabold text-emerald-700 mt-1">₹0</p>
-                <p id="normalCalcCashPct" class="text-xs text-emerald-800 font-semibold mt-0.5">0% of total</p>
-              </div>
-              <div class="p-4 rounded-2xl bg-blue-50 border-2 border-blue-200 text-center">
-                <p class="text-xs font-extrabold uppercase text-blue-900">📱 Online (UPI) Sales</p>
-                <p id="normalCalcUpiSum" class="text-2xl font-extrabold text-blue-700 mt-1">₹0</p>
-                <p id="normalCalcUpiPct" class="text-xs text-blue-800 font-semibold mt-0.5">0% of total</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 5b) SPECIAL FESTIVAL CALCULATOR (2x2 Matrix: Farsan vs Sweet x Cash vs UPI) -->
-        <div class="lg:col-span-6 bg-white rounded-2xl shadow-md border-2 border-amber-400 overflow-hidden">
-          <div class="gold-gradient text-red-950 px-5 py-4 flex flex-wrap items-center justify-between gap-2 border-b border-amber-300">
-            <div>
-              <span class="text-[11px] uppercase tracking-wider font-extrabold text-red-800 block">Blueprint Module 5b</span>
-              <h3 class="text-xl font-extrabold">b) Special Festival Calculator (2×2 Matrix)</h3>
-            </div>
-            <select id="specialMatrixSource" class="bg-red-900 text-amber-100 text-xs font-bold px-3 py-2 rounded-xl">
-              <option value="COMBINED">Combined (Walk-In + Festival Orders)</option>
-              <option value="FESTIVAL_ONLY">Festival Orders Only</option>
-              <option value="DAILY_ONLY">Daily Walk-In Ledger Only</option>
-            </select>
-          </div>
-
-          <div class="p-5 space-y-4">
-            <!-- 2x2 Matrix Table -->
-            <div class="overflow-x-auto rounded-2xl border-2 border-amber-300">
-              <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr class="bg-amber-100/80 text-red-950 text-xs uppercase font-extrabold">
-                    <th class="p-3 border-b border-r border-amber-200">2×2 Revenue Matrix</th>
-                    <th class="p-3 border-b border-r border-amber-200 text-right">💵 Direct (Cash)</th>
-                    <th class="p-3 border-b border-r border-amber-200 text-right">📱 Online (UPI)</th>
-                    <th class="p-3 border-b border-amber-200 text-right bg-amber-200/60">Category Total</th>
-                  </tr>
-                </thead>
-                <tbody class="text-sm font-bold">
-                  <tr class="border-b border-amber-100">
-                    <td class="p-3 border-r border-amber-200 font-extrabold text-[#D32F2F]">🥟 Farsan Items</td>
-                    <td id="matFarsanCash" class="p-3 border-r border-amber-200 text-right">₹0</td>
-                    <td id="matFarsanUpi" class="p-3 border-r border-amber-200 text-right">₹0</td>
-                    <td id="matFarsanTotal" class="p-3 text-right font-extrabold text-[#D32F2F] bg-amber-50">₹0</td>
-                  </tr>
-                  <tr class="border-b border-amber-100">
-                    <td class="p-3 border-r border-amber-200 font-extrabold text-amber-700">🍬 Sweet Items</td>
-                    <td id="matSweetCash" class="p-3 border-r border-amber-200 text-right">₹0</td>
-                    <td id="matSweetUpi" class="p-3 border-r border-amber-200 text-right">₹0</td>
-                    <td id="matSweetTotal" class="p-3 text-right font-extrabold text-amber-800 bg-amber-50">₹0</td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr class="bg-red-900 text-white text-sm font-extrabold">
-                    <td class="p-3 border-r border-red-800">Payment Total</td>
-                    <td id="matCashGrand" class="p-3 border-r border-red-800 text-right text-amber-200">₹0</td>
-                    <td id="matUpiGrand" class="p-3 border-r border-red-800 text-right text-amber-200">₹0</td>
-                    <td id="matGrandTotal" class="p-3 text-right text-lg text-amber-300">₹0</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-
-            <!-- Visual Chart Breakdown -->
-            <div class="relative h-56 w-full bg-amber-50/40 rounded-2xl p-3 border border-amber-200">
-              <canvas id="matrixChartCanvas"></canvas>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ========================================================== -->
-    <!-- TAB 5: NEXT-YEAR CRM & PAST FESTIVAL ARCHIVES              -->
-    <!-- ========================================================== -->
-    <section id="tab-crm" class="tab-panel hidden space-y-6">
-      <div class="bg-white rounded-2xl shadow-md border-2 border-red-800/20 overflow-hidden">
-        <div class="bg-[#D32F2F] text-white px-5 py-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <span class="text-[11px] uppercase tracking-wider text-amber-200 font-bold block">Blueprint Module 4b & 5 — Customer Retention</span>
-            <h3 class="text-xl font-extrabold">Next-Year CRM & 2026 Festival Archives (Diwali / Rakhi / Navratri 2026)</h3>
-            <p class="text-xs text-red-100 mt-0.5">Contact past customers 15 days before the festival to lock in advance sweet box orders.</p>
+            <h2 class="text-base sm:text-lg font-extrabold text-gray-900">Festival Note & Customer Bill Pad</h2>
+            <p class="text-xs text-gray-600">Select a festival below — the Note Heading updates automatically. Fill box count & rate to calculate & save bill under customer's name.</p>
           </div>
+        </div>
+
+        <!-- Festival Selector Dropdown + Custom Option -->
+        <div class="flex flex-wrap sm:flex-nowrap items-center gap-2">
+          <label for="festivalSelector" class="text-xs font-bold uppercase tracking-wider text-red-800 whitespace-nowrap">
+            Select Festival:
+          </label>
+          <select id="festivalSelector" onchange="handleFestivalHeadingChange()" class="bg-amber-50 border-2 border-amber-400 text-red-950 font-extrabold text-sm rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-600 w-full sm:w-auto">
+            <option value="Diwali 2026" selected>🪔 Diwali 2026</option>
+            <option value="Bhai Dooj 2026">🎁 Bhai Dooj 2026</option>
+            <option value="New Year 2026">✨ Nutan Varsh (New Year) 2026</option>
+            <option value="Labh Pancham 2026">🪙 Labh Pancham 2026</option>
+            <option value="Uttarayan 2027">🪁 Uttarayan 2027</option>
+            <option value="Holi - Dhuleti 2027">🎨 Holi - Dhuleti 2027</option>
+            <option value="Raksha Bandhan 2026">🧵 Raksha Bandhan 2026</option>
+            <option value="Ganesh Chaturthi 2026">🌺 Ganesh Chaturthi 2026</option>
+            <option value="Custom">✏️ Custom Festival Heading...</option>
+          </select>
+          <input id="customFestivalInput" type="text" oninput="syncCustomFestivalHeading()" placeholder="Type Festival Name..." class="hidden bg-white border-2 border-red-400 rounded-xl px-3 py-2 text-sm font-bold text-gray-900 w-full sm:w-48" />
+        </div>
+      </div>
+
+      <!-- THE PLAIN FESTIVAL NOTE PAD & CALCULATOR -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- LEFT 8 COLS: PLAIN FESTIVAL NOTE PAD -->
+        <div class="lg:col-span-8 notepad-paper rounded-2xl shadow-xl border-2 border-amber-300 overflow-hidden">
+          
+          <!-- DYNAMIC NOTE HEADER: Festival Heading on Left + Manual Date Section on Right -->
+          <div class="bg-gradient-to-r from-red-800 via-tulsiRed to-red-800 text-white px-5 py-4 border-b-4 border-amber-400 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <span class="text-[11px] uppercase tracking-widest text-amber-200 font-bold block">TULSI FARSAN FESTIVAL NOTEBOOK</span>
+              <h2 id="dynamicNoteFestivalHeading" class="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-amber-300 drop-shadow">
+                Diwali 2026
+              </h2>
+            </div>
+
+            <!-- Side Date Section (Write Manually or Pick Date) -->
+            <div class="bg-white/15 backdrop-blur-sm border border-white/30 rounded-xl px-3.5 py-2 flex items-center gap-2 self-start sm:self-auto">
+              <label for="noteManualDate" class="text-xs font-extrabold uppercase tracking-wider text-amber-200 whitespace-nowrap">
+                <i class="fa-regular fa-calendar-days mr-1"></i>Date:
+              </label>
+              <input
+                type="text"
+                id="noteManualDate"
+                placeholder="e.g. 12/11/2026"
+                class="bg-white text-gray-900 font-bold text-sm px-3 py-1.5 rounded-lg w-36 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              />
+              <button type="button" onclick="setTodayInNoteDate()" title="Fill Today's Date" class="text-xs bg-amber-400 hover:bg-amber-300 text-red-950 font-bold px-2.5 py-1.5 rounded-lg transition">
+                Today
+              </button>
+            </div>
+          </div>
+
+          <!-- PLAIN NOTE BODY -->
+          <div class="p-5 sm:p-6 space-y-6">
+            
+            <!-- Customer Name & 10-Digit Contact Number Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/90 p-4 rounded-xl border border-amber-200 shadow-sm">
+              <!-- Customer Name -->
+              <div>
+                <label for="noteCustName" class="block text-xs font-extrabold uppercase tracking-wider text-red-900 mb-1">
+                  1. Name of Customer <span class="text-red-600">*</span>
+                </label>
+                <div class="relative">
+                  <i class="fa-solid fa-user text-gray-400 absolute left-3.5 top-3.5"></i>
+                  <input
+                    type="text"
+                    id="noteCustName"
+                    placeholder="Write Customer Full Name..."
+                    class="w-full pl-9 pr-3 py-2.5 bg-amber-50/50 border-2 border-amber-300 rounded-xl font-bold text-gray-900 focus:outline-none focus:border-tulsiRed text-base"
+                  />
+                </div>
+                <p class="text-[11px] text-gray-500 mt-1">Bill will be saved under this customer name.</p>
+              </div>
+
+              <!-- Contact Number (Strictly up to 10 Digits) -->
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label for="noteCustPhone" class="block text-xs font-extrabold uppercase tracking-wider text-red-900">
+                    2. Contact No. (10 Digits) <span class="text-red-600">*</span>
+                  </label>
+                  <span id="phoneDigitCounter" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">0 / 10 digits</span>
+                </div>
+                <div class="relative">
+                  <i class="fa-solid fa-phone text-gray-400 absolute left-3.5 top-3.5"></i>
+                  <input
+                    type="tel"
+                    id="noteCustPhone"
+                    maxlength="10"
+                    inputmode="numeric"
+                    oninput="enforceTenDigitPhone(this)"
+                    placeholder="10-digit mobile number"
+                    class="w-full pl-9 pr-3 py-2.5 bg-amber-50/50 border-2 border-amber-300 rounded-xl font-bold text-gray-900 focus:outline-none focus:border-tulsiRed text-base tracking-wider"
+                  />
+                </div>
+                <p class="text-[11px] text-gray-500 mt-1">Numbers only, maximum 10 digits allowed.</p>
+              </div>
+            </div>
+
+            <!-- SWEET BOX & RATE PER BOX ITEMS SECTION -->
+            <div class="space-y-4">
+              <div class="flex flex-wrap items-center justify-between gap-2 border-b-2 border-amber-200 pb-2">
+                <div>
+                  <h3 class="text-sm sm:text-base font-extrabold text-red-950 flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-packing text-tulsiRed"></i>
+                    <span>3. Sweet Box Details & Rate Calculator</span>
+                  </h3>
+                  <p class="text-xs text-gray-600">Write Sweet Type manually, slide or type No. of Boxes, and enter 1 Box Rate.</p>
+                </div>
+
+                <button
+                  type="button"
+                  onclick="addNoteBoxLine()"
+                  class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow flex items-center gap-1.5 transition active:scale-95"
+                >
+                  <i class="fa-solid fa-plus"></i>
+                  <span>Add Another Box Line</span>
+                </button>
+              </div>
+
+              <!-- Dynamic Box Calculator Rows Container -->
+              <div id="noteBoxLinesContainer" class="space-y-4"></div>
+            </div>
+
+            <!-- Optional Plain Note / Delivery Remark -->
+            <div class="bg-white/90 p-3.5 rounded-xl border border-amber-200">
+              <label for="notePlainRemark" class="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
+                Optional Note / Packing Instruction:
+              </label>
+              <input
+                type="text"
+                id="notePlainRemark"
+                placeholder="e.g. Gold gift box packing, deliver on Dhanteras morning..."
+                class="w-full px-3 py-2 bg-amber-50/40 border border-amber-300 rounded-lg text-sm font-medium text-gray-800 focus:outline-none focus:border-tulsiRed"
+              />
+            </div>
+
+            <!-- GRAND TOTAL PRICE & SAVE BUTTON AS CUSTOMER BILL -->
+            <div class="bg-gradient-to-r from-red-950 via-red-900 to-red-950 text-white p-5 rounded-2xl shadow-lg border-2 border-amber-400 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+              <div>
+                <span class="text-xs uppercase tracking-widest text-amber-300 font-bold block">FINAL BILL SUMMARY</span>
+                <div class="flex items-baseline gap-3 mt-1">
+                  <span class="text-sm text-red-100">Total Boxes: <strong id="noteSummaryTotalBoxes" class="text-amber-300 text-lg">1</strong></span>
+                  <span class="text-red-400">|</span>
+                  <span class="text-sm text-red-100">Total Price:</span>
+                </div>
+                <div id="noteGrandTotalDisplay" class="font-display text-3xl sm:text-4xl font-extrabold text-amber-300 tracking-tight mt-0.5">
+                  ₹0.00
+                </div>
+              </div>
+
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                <button
+                  type="button"
+                  onclick="resetFestivalNotePad()"
+                  class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm border border-white/25 transition"
+                >
+                  <i class="fa-solid fa-rotate-left mr-1"></i> Clear Note
+                </button>
+
+                <button
+                  type="button"
+                  onclick="saveCustomerFestivalBill()"
+                  class="px-6 py-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-red-950 font-extrabold text-sm sm:text-base shadow-xl transition flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <i class="fa-solid fa-floppy-disk"></i>
+                  <span>Save Bill Record</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- RIGHT 4 COLS: BUILT-IN BASIC BOX & SHOP CALCULATOR -->
+        <div class="lg:col-span-4 space-y-5">
+          
+          <!-- Instant Single-Box Multiplier & Basic Calculator Card -->
+          <div class="bg-white rounded-2xl shadow-lg border-2 border-amber-300 overflow-hidden">
+            <div class="bg-amber-500 text-red-950 px-4 py-3 font-extrabold text-sm flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-calculator text-base"></i>
+                <span>Quick Box Rate Calculator</span>
+              </div>
+              <span class="text-[11px] bg-white/80 px-2 py-0.5 rounded-md font-bold">Auto + Manual</span>
+            </div>
+
+            <div class="p-4 space-y-4">
+              <!-- Quick 1-Box to Many-Box Estimator -->
+              <div class="bg-amber-50 p-3.5 rounded-xl border border-amber-200 space-y-2.5">
+                <div class="text-xs font-extrabold text-red-900 uppercase tracking-wider">
+                  Check Box Rate Table (1 Box Rate × Boxes)
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="text-[11px] font-bold text-gray-600">1 Box Price (₹)</label>
+                    <input type="number" id="quickCalcOneBoxRate" value="450" oninput="updateQuickBoxTable()" class="w-full px-2.5 py-1.5 border border-amber-300 rounded-lg font-bold text-gray-900 text-sm bg-white" />
+                  </div>
+                  <div>
+                    <label class="text-[11px] font-bold text-gray-600">Custom Boxes</label>
+                    <input type="number" id="quickCalcBoxCount" value="10" oninput="updateQuickBoxTable()" class="w-full px-2.5 py-1.5 border border-amber-300 rounded-lg font-bold text-gray-900 text-sm bg-white" />
+                  </div>
+                </div>
+                <div class="bg-white px-3 py-2 rounded-lg border border-amber-300 flex items-center justify-between">
+                  <span class="text-xs font-bold text-gray-600">Calculated Price:</span>
+                  <span id="quickCalcResultText" class="text-base font-extrabold text-tulsiRed">₹4,500</span>
+                </div>
+                <!-- Multi-box quick reference badges -->
+                <div id="quickBoxMultipliersGrid" class="grid grid-cols-3 gap-1.5 pt-1 text-center"></div>
+              </div>
+
+              <!-- Standard Basic Arithmetic Calculator -->
+              <div class="border-t border-gray-200 pt-3">
+                <div class="text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-2">
+                  Basic Counter Calculator
+                </div>
+                <div class="bg-gray-900 text-amber-300 font-mono text-right p-3 rounded-xl mb-2.5 shadow-inner">
+                  <div id="basicCalcHistory" class="text-xs text-gray-400 h-4 truncate">0</div>
+                  <div id="basicCalcScreen" class="text-2xl font-bold truncate">0</div>
+                </div>
+                <div class="grid grid-cols-4 gap-1.5 text-sm font-bold">
+                  <button type="button" onclick="calcInput('C')" class="bg-red-100 hover:bg-red-200 text-red-800 py-2.5 rounded-lg">C</button>
+                  <button type="button" onclick="calcInput('BACK')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2.5 rounded-lg"><i class="fa-solid fa-delete-left"></i></button>
+                  <button type="button" onclick="calcInput('/')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 py-2.5 rounded-lg">÷</button>
+                  <button type="button" onclick="calcInput('*')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 py-2.5 rounded-lg">×</button>
+
+                  <button type="button" onclick="calcInput('7')" class="bg-gray-100 hover:bg-gray-200 text-gray-900 py-2.5 rounded-lg">7</button>
+                  <button type="button" onclick="calcInput('8')" class="bg-gray-100 hover:bg-gray-200 text-gray-900 py-2.5 rounded-lg">8</button>
+                  <button type="button" onclick="calcInput('9')" class="bg-gray-100 hover:bg-gray-200 text-gray-900 py-2.5 rounded-lg">9</button>
+                  <button type="button" onclick="calcInput('-')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 py-2.5 rounded-lg">−</button>
+
+                  <button type="button" onclick="calcInput('4')" class="bg-gray-100 hover:bg-gray-200 text-gray-900 py-2.5 rounded-lg">4</button>
+                  <button type="button" onclick="calcInput('5')" class="bg-gray-100 hover:bg-gray-200 text-gray-900 py-2.5 rounded-lg">5</button>
+                  <button type="button" onclick="calcInput('6')" class="bg-gray-100 hover:bg-gray-200 text-gray-900 py-2.5 rounded-lg">6</button>
+                  <button type="button" onclick="calcInput('+')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 py-2.5 rounded-lg">+</button>
+
+                  <button type="button" onclick="calcInput('1')" class="bg-gray-100 hover:bg-gray-200 text-gray-900 py-2.5 rounded-lg">1</button>
+                  <button type="button" onclick="calcInput('2')" class="bg-gray-100 hover:bg-gray-200 text-gray-900 py-2.5 rounded-lg">2</button>
+                  <button type="button" onclick="calcInput('3')" class="bg-gray-100 hover:bg-gray-200 text-gray-900 py-2.5 rounded-lg">3</button>
+                  <button type="button" onclick="calcInput('=')" class="row-span-2 bg-tulsiRed hover:bg-red-700 text-white py-2.5 rounded-lg flex items-center justify-center text-lg">=</button>
+
+                  <button type="button" onclick="calcInput('0')" class="col-span-2 bg-gray-100 hover:bg-gray-200 text-gray-900 py-2.5 rounded-lg">0</button>
+                  <button type="button" onclick="calcInput('.')" class="bg-gray-100 hover:bg-gray-200 text-gray-900 py-2.5 rounded-lg">.</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SAVED CUSTOMER FESTIVAL BILLS / NOTES DIRECTORY -->
+      <div class="bg-white rounded-2xl shadow-lg border-2 border-amber-200 p-5 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-gray-200 pb-4">
+          <div>
+            <h3 class="text-lg font-extrabold text-gray-900 flex items-center gap-2">
+              <i class="fa-solid fa-folder-open text-tulsiRed"></i>
+              <span>Saved Customer Bills & Festival Notes Record</span>
+              <span id="savedNotesCountBadge" class="bg-red-100 text-tulsiRed text-xs px-2.5 py-0.5 rounded-full font-extrabold">0 Bills</span>
+            </h3>
+            <p class="text-xs text-gray-500">Every note is saved under the Customer's Name with festival heading, manual date, 10-digit phone, sweet box rates, and total bill.</p>
+          </div>
+
+          <!-- Search by Customer Name & Filter by Festival -->
           <div class="flex flex-wrap items-center gap-2">
-            <select id="crmArchiveFilter" class="bg-red-900 text-amber-100 text-xs font-bold px-3 py-2 rounded-xl border border-amber-300/40">
-              <option value="ALL">All 2026 Festival Archives</option>
+            <div class="relative">
+              <i class="fa-solid fa-magnifying-glass text-gray-400 absolute left-3 top-2.5 text-xs"></i>
+              <input
+                type="text"
+                id="searchSavedNotesInput"
+                oninput="renderSavedFestivalNotes()"
+                placeholder="Search customer name or phone..."
+                class="pl-8 pr-3 py-1.5 bg-amber-50/60 border border-amber-300 rounded-xl text-xs font-semibold text-gray-800 focus:outline-none focus:border-tulsiRed"
+              />
+            </div>
+
+            <select
+              id="filterSavedNotesFestival"
+              onchange="renderSavedFestivalNotes()"
+              class="bg-amber-50 border border-amber-300 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-800"
+            >
+              <option value="ALL">All Festivals</option>
               <option value="Diwali 2026">Diwali 2026</option>
-              <option value="Navratri 2026">Navratri 2026</option>
-              <option value="Ganesh Chaturthi 2026">Ganesh Chaturthi 2026</option>
-              <option value="Rakshabandhan 2026">Rakshabandhan 2026</option>
+              <option value="Bhai Dooj 2026">Bhai Dooj 2026</option>
+              <option value="New Year 2026">New Year 2026</option>
+              <option value="Labh Pancham 2026">Labh Pancham 2026</option>
+              <option value="Uttarayan 2027">Uttarayan 2027</option>
+              <option value="Holi - Dhuleti 2027">Holi - Dhuleti 2027</option>
+              <option value="Raksha Bandhan 2026">Raksha Bandhan 2026</option>
             </select>
-            <input type="text" id="crmSearchInput" placeholder="Search customer or phone..." class="px-3 py-2 rounded-xl text-xs font-bold text-gray-900 bg-white border border-amber-300 focus:outline-none" />
           </div>
         </div>
 
-        <div class="p-5">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-amber-50 text-red-950 text-xs uppercase font-extrabold border-b-2 border-amber-200">
-                  <th class="p-3.5">Festival Archive</th>
-                  <th class="p-3.5">Customer Name</th>
-                  <th class="p-3.5">Phone Number</th>
-                  <th class="p-3.5">Past Sweet / Farsan Order Details</th>
-                  <th class="p-3.5 text-right">2026 Bill</th>
-                  <th class="p-3.5 text-center">15-Day Advance Action</th>
-                </tr>
-              </thead>
-              <tbody id="crmTableBody" class="divide-y divide-gray-200 text-sm"></tbody>
-            </table>
+        <!-- Saved Customer Cards Grid -->
+        <div id="savedFestivalNotesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 2: QUICK COUNTER BILLING & RAW SAMAN ESTIMATOR                  -->
+    <!-- =================================================================== -->
+    <section id="tab-counterBilling" class="tab-section hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left 7 Cols: Quick Counter Walk-In Billing -->
+        <div class="lg:col-span-7 bg-white rounded-2xl shadow-md border border-amber-200 p-5 space-y-4">
+          <div class="flex items-center justify-between border-b pb-3">
+            <div>
+              <h2 class="text-lg font-extrabold text-gray-900">Quick Walk-In Counter Entry</h2>
+              <p class="text-xs text-gray-500">Select item from live shop menu, pick weight, and log instant counter sale.</p>
+            </div>
+            <span class="bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">Walk-In POS</span>
           </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Select Sweet / Farsan Item</label>
+              <select id="posItemSelect" onchange="updatePosCalculation()" class="w-full border-2 border-amber-300 rounded-xl px-3 py-2.5 font-bold text-gray-900 bg-amber-50/40"></select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Quantity (in Kg)</label>
+              <div class="flex items-center gap-2">
+                <input type="number" id="posWeightKg" value="1" step="0.25" min="0.1" oninput="updatePosCalculation()" class="w-full border-2 border-amber-300 rounded-xl px-3 py-2.5 font-bold text-gray-900" />
+                <div class="flex gap-1">
+                  <button type="button" onclick="setPosWeight(0.25)" class="px-2 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-950 rounded-lg text-xs font-bold">250g</button>
+                  <button type="button" onclick="setPosWeight(0.5)" class="px-2 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-950 rounded-lg text-xs font-bold">500g</button>
+                  <button type="button" onclick="setPosWeight(1)" class="px-2 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-950 rounded-lg text-xs font-bold">1kg</button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Customer Name (Optional)</label>
+              <input type="text" id="posCustomerName" placeholder="Walk-In Customer" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm font-semibold" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Payment Mode</label>
+              <select id="posPaymentMode" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm font-bold">
+                <option value="Cash">💵 Cash Counter</option>
+                <option value="UPI / GPay">📱 UPI / GPay QR</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between">
+            <div>
+              <span class="text-xs font-bold text-red-800 uppercase">Calculated Walk-In Total</span>
+              <div id="posTotalDisplay" class="text-2xl font-extrabold text-tulsiRed">₹0</div>
+            </div>
+            <button type="button" onclick="recordWalkInSale()" class="bg-tulsiRed hover:bg-red-800 text-white font-bold px-5 py-3 rounded-xl shadow-md transition active:scale-95">
+              <i class="fa-solid fa-check mr-1"></i> Save Walk-In Sale
+            </button>
+          </div>
+        </div>
+
+        <!-- Right 5 Cols: Raw Saman (Besan, Oil, Sugar, Mawa) Estimator -->
+        <div class="lg:col-span-5 bg-white rounded-2xl shadow-md border border-amber-200 p-5 space-y-4">
+          <div class="border-b pb-3">
+            <h2 class="text-lg font-extrabold text-gray-900 flex items-center gap-2">
+              <i class="fa-solid fa-fire-burner text-amber-600"></i>
+              <span>Raw Saman Ratio Estimator</span>
+            </h2>
+            <p class="text-xs text-gray-500">Estimate raw materials (Besan, Oil, Sugar, Mawa) required for bulk production.</p>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Select Item to Produce</label>
+              <select id="rawItemSelect" onchange="calculateRawSaman()" class="w-full border border-amber-300 rounded-xl px-3 py-2 font-bold text-sm bg-amber-50/40"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Target Production Batch (Kg)</label>
+              <input type="number" id="rawBatchKg" value="10" min="1" oninput="calculateRawSaman()" class="w-full border border-amber-300 rounded-xl px-3 py-2 font-bold text-sm" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5 pt-2">
+              <div class="bg-amber-50 p-3 rounded-xl border border-amber-200">
+                <span class="text-[11px] font-bold text-amber-900 uppercase">Besan / Flour</span>
+                <div id="rawBesanVal" class="text-lg font-extrabold text-gray-900">0 kg</div>
+              </div>
+              <div class="bg-amber-50 p-3 rounded-xl border border-amber-200">
+                <span class="text-[11px] font-bold text-amber-900 uppercase">Cooking Oil / Ghee</span>
+                <div id="rawOilVal" class="text-lg font-extrabold text-gray-900">0 L</div>
+              </div>
+              <div class="bg-amber-50 p-3 rounded-xl border border-amber-200">
+                <span class="text-[11px] font-bold text-amber-900 uppercase">Sugar (Khand)</span>
+                <div id="rawSugarVal" class="text-lg font-extrabold text-gray-900">0 kg</div>
+              </div>
+              <div class="bg-amber-50 p-3 rounded-xl border border-amber-200">
+                <span class="text-[11px] font-bold text-amber-900 uppercase">Mawa / Kaju Base</span>
+                <div id="rawMawaVal" class="text-lg font-extrabold text-gray-900">0 kg</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 3: DAILY WALK-IN LEDGER                                         -->
+    <!-- =================================================================== -->
+    <section id="tab-walkinLedger" class="tab-section hidden space-y-4">
+      <div class="bg-white rounded-2xl shadow-md border border-amber-200 p-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-lg font-extrabold text-gray-900">2. Daily Walk-In Sales Ledger</h2>
+            <p class="text-xs text-gray-500">Real-time counter transactions. Unlock Manager Mode (PIN 2009) to delete mistaken entries.</p>
+          </div>
+          <div id="walkinTotalRevenueBadge" class="bg-green-100 text-green-900 font-extrabold px-4 py-2 rounded-xl text-sm">
+            Total Walk-In Revenue: ₹0
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-amber-50 text-amber-950 border-b border-amber-200 text-xs uppercase">
+                <th class="py-3 px-3">Date & Time</th>
+                <th class="py-3 px-3">Customer</th>
+                <th class="py-3 px-3">Item</th>
+                <th class="py-3 px-3">Weight</th>
+                <th class="py-3 px-3">Payment</th>
+                <th class="py-3 px-3">Amount</th>
+                <th class="py-3 px-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="walkinLedgerTableBody" class="divide-y divide-gray-100"></tbody>
+          </table>
         </div>
       </div>
     </section>
 
-    <!-- ========================================================== -->
-    <!-- TAB 6: MANAGER / ADMIN MODE (PIN-PROTECTED MENU & RATES)   -->
-    <!-- ========================================================== -->
-    <section id="tab-admin" class="tab-panel hidden space-y-6">
-      <div class="bg-white rounded-2xl shadow-md border-2 border-amber-500 overflow-hidden">
-        <div class="gold-gradient text-red-950 px-5 py-4 flex flex-wrap items-center justify-between gap-2">
+    <!-- =================================================================== -->
+    <!-- TAB 4: FESTIVAL ORDERS & 2026 CRM LIST                              -->
+    <!-- =================================================================== -->
+    <section id="tab-festivalCrm" class="tab-section hidden space-y-6">
+      <div class="bg-white rounded-2xl shadow-md border border-amber-200 p-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
-            <span class="text-[11px] uppercase tracking-wider font-extrabold text-red-800 block">PIN-Unlocked Manager Mode</span>
-            <h3 class="text-xl font-extrabold">★ Menu Items, Standard Rates & Target Saman Load</h3>
+            <h2 class="text-lg font-extrabold text-gray-900">2026 Customer CRM Directory (Auto-Synced from Festival Notes)</h2>
+            <p class="text-xs text-gray-500">Every customer saved in Festival Notes & Bill Pad is automatically added to your 2026 CRM table.</p>
           </div>
-          <span class="px-3 py-1 rounded-full bg-red-900 text-amber-200 text-xs font-extrabold">Admin PIN: 2009</span>
+          <span id="crmCountBadge" class="bg-amber-100 text-amber-950 font-extrabold text-xs px-3 py-1.5 rounded-full">0 Customers</span>
         </div>
 
-        <div class="p-5 grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <!-- Add / Update Menu Item Form -->
-          <form id="adminMenuForm" class="lg:col-span-4 bg-amber-50/70 p-4 rounded-2xl border border-amber-200 space-y-3">
-            <h4 class="text-sm font-extrabold text-red-950 uppercase">Add / Update Shop Item</h4>
-            <div>
-              <label class="block text-xs font-bold text-gray-700 mb-1">Item Name *</label>
-              <input type="text" id="adminItemName" placeholder="e.g., Surti Khaman" required class="w-full px-3 py-2 rounded-xl border border-gray-300 font-bold text-sm" />
-            </div>
-            <div class="grid grid-cols-2 gap-2.5">
-              <div>
-                <label class="block text-xs font-bold text-gray-700 mb-1">Category *</label>
-                <select id="adminItemCategory" class="w-full px-3 py-2 rounded-xl border border-gray-300 font-bold text-sm bg-white">
-                  <option value="Farsan">Farsan</option>
-                  <option value="Sweet">Sweet</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-700 mb-1">Rate (₹ per kg) *</label>
-                <input type="number" id="adminItemPrice" min="10" placeholder="380" required class="w-full px-3 py-2 rounded-xl border border-gray-300 font-bold text-sm" />
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-700 mb-1">Base Festival Prep Buffer (kg)</label>
-              <input type="number" id="adminItemTargetKg" min="0" value="50" required class="w-full px-3 py-2 rounded-xl border border-gray-300 font-bold text-sm" />
-            </div>
-            <button type="submit" class="tap-btn w-full py-3 rounded-xl bg-[#D32F2F] text-white font-extrabold text-sm shadow">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-amber-50 text-amber-950 border-b border-amber-200 text-xs uppercase">
+                <th class="py-3 px-3">Customer Name</th>
+                <th class="py-3 px-3">10-Digit Phone</th>
+                <th class="py-3 px-3">Festival Tag</th>
+                <th class="py-3 px-3">Sweet Type</th>
+                <th class="py-3 px-3">Boxes</th>
+                <th class="py-3 px-3">Total Bill</th>
+              </tr>
+            </thead>
+            <tbody id="crmTableBody" class="divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 5: MANAGER MENU & RATES (PIN 2009)                              -->
+    <!-- =================================================================== -->
+    <section id="tab-managerMenu" class="tab-section hidden space-y-6">
+      <div class="bg-white rounded-2xl shadow-md border border-amber-200 p-5 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-3">
+          <div>
+            <h2 class="text-lg font-extrabold text-gray-900">Manager Menu & Rates Editor (₹/kg)</h2>
+            <p class="text-xs text-gray-500">Requires Manager Mode (PIN 2009) to add new items or update shop rates.</p>
+          </div>
+          <span id="managerStatusBanner" class="text-xs font-extrabold px-3 py-1.5 rounded-full bg-red-100 text-red-800">
+            Locked (Enter PIN 2009 in top-right)
+          </span>
+        </div>
+
+        <!-- Add / Update Item Form -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-amber-50/70 p-4 rounded-xl border border-amber-200">
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Item Name</label>
+            <input type="text" id="menuItemName" placeholder="e.g. Kaju Katri" class="w-full border border-amber-300 rounded-xl px-3 py-2 text-sm font-bold bg-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Category</label>
+            <select id="menuItemCategory" class="w-full border border-amber-300 rounded-xl px-3 py-2 text-sm font-bold bg-white">
+              <option value="Sweet">🍬 Sweet (Mithai)</option>
+              <option value="Farsan">🥨 Farsan (Namkeen)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Rate per Kg (₹)</label>
+            <input type="number" id="menuItemRate" placeholder="880" class="w-full border border-amber-300 rounded-xl px-3 py-2 text-sm font-bold bg-white" />
+          </div>
+          <div class="flex items-end">
+            <button type="button" onclick="saveMenuItem()" class="w-full bg-tulsiRed hover:bg-red-800 text-white font-bold py-2.5 px-4 rounded-xl shadow transition">
               + Save Item to Menu
             </button>
-          </form>
-
-          <!-- Current Menu Table with Rate Editor -->
-          <div class="lg:col-span-8 overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-gray-100 text-gray-700 text-xs uppercase font-extrabold border-b">
-                  <th class="p-3">Item Name</th>
-                  <th class="p-3">Category</th>
-                  <th class="p-3">Rate (₹/kg)</th>
-                  <th class="p-3">Base Festival Prep (kg)</th>
-                  <th class="p-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody id="adminMenuTableBody" class="divide-y divide-gray-200 text-sm font-bold"></tbody>
-            </table>
           </div>
         </div>
+
+        <!-- Live Menu Table -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="menuItemsGrid"></div>
       </div>
     </section>
 
   </main>
 
-  <!-- MOBILE BOTTOM NAVIGATION BAR (LARGE TAP TARGETS) -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-red-950 text-white border-t-2 border-amber-400 z-40 grid grid-cols-5 shadow-2xl">
-    <button data-tab="dashboard" class="nav-tab-btn py-2.5 flex flex-col items-center justify-center text-[11px] font-bold text-amber-300">
-      <span class="text-lg">🏠</span>
-      <span>Saman</span>
-    </button>
-    <button data-tab="daily" class="nav-tab-btn py-2.5 flex flex-col items-center justify-center text-[11px] font-bold text-red-200">
-      <span class="text-lg">⚡</span>
-      <span>Daily Sale</span>
-    </button>
-    <button data-tab="festivals" class="nav-tab-btn py-2.5 flex flex-col items-center justify-center text-[11px] font-bold text-red-200">
-      <span class="text-lg">🪔</span>
-      <span>Festivals</span>
-    </button>
-    <button data-tab="analytics" class="nav-tab-btn py-2.5 flex flex-col items-center justify-center text-[11px] font-bold text-red-200">
-      <span class="text-lg">📊</span>
-      <span>Calculators</span>
-    </button>
-    <button data-tab="crm" class="nav-tab-btn py-2.5 flex flex-col items-center justify-center text-[11px] font-bold text-red-200">
-      <span class="text-lg">📞</span>
-      <span>CRM 2026</span>
-    </button>
-  </nav>
-
-  <!-- ========================================================== -->
-  <!-- MODAL 1: MANAGER PIN AUTHENTICATION                        -->
-  <!-- ========================================================== -->
-  <div id="pinModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl border-2 border-[#D32F2F]">
-      <div class="bg-[#D32F2F] text-white px-5 py-4 flex items-center justify-between">
-        <h3 class="font-extrabold text-lg">🔒 Enter Manager PIN</h3>
-        <button id="closePinModal" class="text-amber-200 hover:text-white font-bold text-xl">&times;</button>
+  <!-- =================================================================== -->
+  <!-- MODAL 1: MANAGER PIN 2009 UNLOCK MODAL                              -->
+  <!-- =================================================================== -->
+  <div id="pinModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border-2 border-amber-400 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-display font-extrabold text-lg text-gray-900">Enter Manager PIN</h3>
+        <button onclick="closePinModal()" class="text-gray-400 hover:text-gray-700"><i class="fa-solid fa-xmark text-xl"></i></button>
       </div>
-      <form id="pinForm" class="p-5 space-y-4">
-        <p class="text-xs text-gray-600 font-medium">
-          Enter the 4-digit Manager PIN to unlock Menu Rate Editing, Past Ledger Edits, and Historical Deletions. (Manager PIN: <strong>2009</strong>)
-        </p>
-        <input type="password" id="pinInput" maxlength="4" placeholder="••••" required class="w-full text-center tracking-[1em] text-2xl font-extrabold py-3 rounded-xl border-2 border-gray-300 focus:border-[#D32F2F] focus:outline-none" />
-        <p id="pinErrorMsg" class="text-xs font-bold text-red-600 hidden text-center">Incorrect PIN. Enter 2009.</p>
-        <button type="submit" class="tap-btn w-full py-3.5 rounded-xl bg-[#D32F2F] text-white font-extrabold text-sm shadow">
-          UNLOCK MANAGER MODE
-        </button>
-      </form>
+      <p class="text-xs text-gray-600">Enter your 4-digit Manager PIN (Default: <strong>2009</strong>) to unlock rate editing and record deletion.</p>
+      <input
+        type="password"
+        id="managerPinInput"
+        maxlength="4"
+        inputmode="numeric"
+        placeholder="••••"
+        class="w-full text-center text-2xl tracking-[0.5em] font-extrabold border-2 border-amber-400 rounded-xl py-2.5 focus:outline-none focus:border-tulsiRed"
+      />
+      <div class="flex justify-end gap-2">
+        <button onclick="closePinModal()" class="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-bold text-xs">Cancel</button>
+        <button onclick="verifyManagerPin()" class="px-5 py-2 rounded-xl bg-tulsiRed text-white font-bold text-xs shadow">Unlock Manager Mode</button>
+      </div>
     </div>
   </div>
 
-  <!-- ========================================================== -->
-  <!-- MODAL 2: FIREBASE CLOUD CONFIG & SECURITY RULES            -->
-  <!-- ========================================================== -->
-  <div id="firebaseModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border-2 border-amber-400">
-      <div class="bg-[#D32F2F] text-white px-5 py-4 flex items-center justify-between">
-        <div>
-          <h3 class="font-extrabold text-lg">🔥 Firebase Real-Time Sync & Security Rules</h3>
-          <p class="text-xs text-amber-200">Multi-Device APK & Counter Tablet Cloud Configuration</p>
+  <!-- =================================================================== -->
+  <!-- MODAL 2: FIREBASE CLOUD & ANDROID APK SETUP MODAL                   -->
+  <!-- =================================================================== -->
+  <div id="firebaseModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border-2 border-amber-400 space-y-4 my-8">
+      <div class="flex items-center justify-between border-b pb-3">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-cloud-bolt text-amber-500 text-xl"></i>
+          <h3 class="font-display font-extrabold text-lg text-gray-900">Firebase Cloud & Android APK Setup</h3>
         </div>
-        <button id="closeFirebaseModal" class="text-amber-200 hover:text-white font-bold text-2xl">&times;</button>
+        <button onclick="closeFirebaseModal()" class="text-gray-400 hover:text-gray-700"><i class="fa-solid fa-xmark text-xl"></i></button>
       </div>
 
-      <div class="p-5 overflow-y-auto space-y-4 text-xs">
-        <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 space-y-1">
-          <p class="font-extrabold">How Multi-Device Sync Works:</p>
-          <p>Paste your Firebase Project JSON config below to activate live Firestore real-time listeners (`onSnapshot`) across all shop phones and tablets. When no external config is entered, the app runs seamlessly in instant reactive mode so you can test every feature immediately.</p>
-        </div>
-
-        <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-200 space-y-3">
-          <div class="flex items-center justify-between">
-            <label class="block font-extrabold uppercase text-red-950">1. Quick Firebase Project Credentials</label>
-            <span id="fbSavedStatus" class="text-[11px] font-bold text-emerald-700">Auto-saves on device</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <div>
-              <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Project ID *</label>
-              <input type="text" id="fbProjectId" placeholder="tulsi-farsan-db" class="w-full px-2.5 py-2 rounded-lg border border-gray-300 font-mono text-xs" />
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Web API Key *</label>
-              <input type="text" id="fbApiKey" placeholder="AIzaSy..." class="w-full px-2.5 py-2 rounded-lg border border-gray-300 font-mono text-xs" />
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-gray-600 mb-0.5">App ID (Optional)</label>
-              <input type="text" id="fbAppId" placeholder="1:123456:web:abc" class="w-full px-2.5 py-2 rounded-lg border border-gray-300 font-mono text-xs" />
-            </div>
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-gray-600 mb-0.5">Or Paste Full Firebase Config JSON / Snippet:</label>
-            <textarea id="firebaseConfigInput" rows="3" placeholder='{"apiKey": "AIza...", "authDomain": "tulsi-farsan.firebaseapp.com", "projectId": "tulsi-farsan"}' class="w-full p-2.5 rounded-xl border border-gray-300 font-mono text-xs focus:border-[#D32F2F] focus:outline-none"></textarea>
-          </div>
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
-            <button type="button" id="btnSeedFirebase" class="tap-btn px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-red-950 font-extrabold text-xs">
-              ☁️ Push Shop Menu & Initial Data to Cloud
-            </button>
-            <button type="button" id="btnConnectFirebase" class="tap-btn px-4 py-2 rounded-xl bg-[#D32F2F] hover:bg-red-700 text-white font-extrabold text-xs shadow">
-              Connect Firebase Cloud
-            </button>
-          </div>
-        </div>
-
+      <div class="space-y-3 text-xs text-gray-700">
+        <p class="font-semibold text-gray-900">Connect Google Firebase Firestore for instant multi-phone sync:</p>
         <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="font-extrabold uppercase text-gray-700">2. Firestore Database Schema & Security Rules (`firestore.rules`)</label>
-            <button id="btnCopyRules" class="px-2.5 py-1 rounded bg-gray-200 hover:bg-gray-300 font-bold text-gray-800">Copy Rules</button>
+          <label class="block font-bold uppercase text-gray-700 mb-1">Firebase Project ID</label>
+          <input type="text" id="fbProjectIdInput" placeholder="e.g. tulsi-farsan-db" class="w-full border border-gray-300 rounded-xl px-3 py-2 font-mono text-sm" />
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-gray-700 mb-1">Web API Key</label>
+          <input type="text" id="fbApiKeyInput" placeholder="AIzaSy..." class="w-full border border-gray-300 rounded-xl px-3 py-2 font-mono text-sm" />
+        </div>
+
+        <div class="flex flex-wrap gap-2 pt-2">
+          <button type="button" onclick="connectFirebaseCloud()" class="flex-1 bg-tulsiRed hover:bg-red-800 text-white font-bold py-2.5 px-4 rounded-xl shadow">
+            Connect Firebase Cloud
+          </button>
+          <button type="button" onclick="pushInitialDataToCloud()" class="flex-1 bg-amber-400 hover:bg-amber-300 text-red-950 font-extrabold py-2.5 px-4 rounded-xl shadow">
+            Push Shop Menu & Initial Data to Cloud
+          </button>
+        </div>
+
+        <!-- Firestore Security Rules Box -->
+        <div class="bg-gray-900 text-gray-100 p-3 rounded-xl space-y-2 mt-3">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-amber-300 uppercase">Firestore Security Rules (asia-south1 Mumbai)</span>
+            <button type="button" onclick="copyFirestoreRules()" class="bg-white/15 hover:bg-white/25 text-white px-2.5 py-1 rounded text-[11px] font-bold">
+              <i class="fa-regular fa-copy mr-1"></i>Copy Rules
+            </button>
           </div>
-          <pre id="firestoreRulesCode" class="p-3 rounded-xl bg-gray-900 text-emerald-300 font-mono text-[11px] overflow-x-auto leading-relaxed">rules_version = '2';
+          <pre id="firestoreRulesText" class="text-[11px] font-mono overflow-x-auto text-green-300">rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Tulsi Farsan Multi-Device Shop Sync Rules
     match /shops/tulsi_farsan/{collection}/{docId} {
-      // Allow real-time read & counter entry across authenticated shop devices
-      allow read, create: if true;
-      // Restrict price updates & ledger deletions to Manager Mode
-      allow update, delete: if request.resource.data.managerPinVerified == true || true;
+      allow read, create, update, delete: if true;
     }
   }
 }</pre>
@@ -844,1082 +781,1033 @@ service cloud.firestore {
     </div>
   </div>
 
-  <!-- ========================================================== -->
-  <!-- APPLICATION LOGIC & FIREBASE CLOUD ADAPTER                 -->
-  <!-- ========================================================== -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getFirestore,
-      collection,
-      doc,
-      setDoc,
-      deleteDoc,
-      onSnapshot
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <!-- =================================================================== -->
+  <!-- MODAL 3: PRINTABLE / SHAREABLE CUSTOMER BILL RECEIPT MODAL          -->
+  <!-- =================================================================== -->
+  <div id="billReceiptModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border-2 border-amber-400 space-y-4">
+      <div id="printableReceiptArea" class="bg-cream p-5 rounded-xl border-2 border-dashed border-tulsiRed space-y-3">
+        <div class="text-center border-b-2 border-tulsiRed pb-3">
+          <h3 class="font-display font-extrabold text-xl text-tulsiRed">TULSI FARSAN</h3>
+          <p id="receiptFestivalHeading" class="text-xs font-extrabold uppercase tracking-widest bg-amber-300 text-red-950 inline-block px-3 py-0.5 rounded-full mt-1">Diwali 2026</p>
+          <p id="receiptDateText" class="text-xs text-gray-600 mt-1">Date: --</p>
+        </div>
 
-    // Current context date (2026-11-12)
-    const TODAY_STR = "2026-11-12";
+        <div class="text-xs space-y-1 border-b border-amber-300 pb-2">
+          <div><span class="font-bold text-gray-600">Customer Name:</span> <strong id="receiptCustName" class="text-sm text-gray-900"></strong></div>
+          <div><span class="font-bold text-gray-600">Contact No:</span> <strong id="receiptCustPhone" class="text-gray-900"></strong></div>
+        </div>
 
-    // Initial Authentic Tulsi Farsan Menu & Production Ratios
+        <div id="receiptItemsList" class="space-y-1.5 text-xs divide-y divide-amber-200"></div>
+
+        <div id="receiptRemarkBox" class="text-[11px] italic text-gray-600 bg-amber-50 p-2 rounded"></div>
+
+        <div class="border-t-2 border-tulsiRed pt-2 flex items-center justify-between">
+          <span class="text-xs font-extrabold uppercase text-red-900">Grand Total Price:</span>
+          <span id="receiptGrandTotal" class="text-xl font-extrabold text-tulsiRed">₹0.00</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2">
+        <button onclick="window.print()" class="bg-amber-400 hover:bg-amber-300 text-red-950 font-bold text-xs px-4 py-2.5 rounded-xl shadow flex items-center gap-1.5">
+          <i class="fa-solid fa-print"></i> Print Bill
+        </button>
+        <button onclick="closeReceiptModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold text-xs px-4 py-2.5 rounded-xl">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION JAVASCRIPT -->
+  <script>
+    /********************************************************************
+     * 1. STARTER DATA (INITIAL_MENU & DEFAULT FESTIVAL NOTES)
+     ********************************************************************/
     const INITIAL_MENU = [
-      { id: "item_fafda", name: "Fafda", category: "Farsan", pricePerKg: 520, baseFestivalKg: 110, recipe: { besan: 0.85, oil: 0.35, sugar: 0, mawa: 0 } },
-      { id: "item_jalebi", name: "Pure Ghee Jalebi", category: "Sweet", pricePerKg: 480, baseFestivalKg: 80, recipe: { besan: 0.15, oil: 0.30, sugar: 0.70, mawa: 0 } },
-      { id: "item_khaman", name: "Nylon Khaman", category: "Farsan", pricePerKg: 240, baseFestivalKg: 35, recipe: { besan: 0.65, oil: 0.15, sugar: 0.08, mawa: 0 } },
-      { id: "item_samosa", name: "Patti Samosa", category: "Farsan", pricePerKg: 280, baseFestivalKg: 30, recipe: { besan: 0.25, oil: 0.30, sugar: 0, mawa: 0 } },
-      { id: "item_thabdi", name: "Thabdi Peda", category: "Sweet", pricePerKg: 560, baseFestivalKg: 45, recipe: { besan: 0, oil: 0.10, sugar: 0.35, mawa: 0.85 } },
-      { id: "item_kajukatri", name: "Kaju Katri", category: "Sweet", pricePerKg: 920, baseFestivalKg: 185, recipe: { besan: 0, oil: 0.05, sugar: 0.45, mawa: 0.20 } },
-      { id: "item_kajupenda", name: "Kesar Kaju Penda", category: "Sweet", pricePerKg: 640, baseFestivalKg: 190, recipe: { besan: 0, oil: 0.05, sugar: 0.40, mawa: 0.75 } },
-      { id: "item_motichoor", name: "Motichoor Ladoo", category: "Sweet", pricePerKg: 460, baseFestivalKg: 60, recipe: { besan: 0.45, oil: 0.35, sugar: 0.55, mawa: 0.10 } }
+      { id: 'm1', name: 'Kaju Katri (Royal)', category: 'Sweet', rate: 920, besan: 0, oil: 0.1, sugar: 0.4, mawa: 0.6 },
+      { id: 'm2', name: 'Motichoor Ladoo (Pure Ghee)', category: 'Sweet', rate: 560, besan: 0.45, oil: 0.4, sugar: 0.5, mawa: 0.05 },
+      { id: 'm3', name: 'Mohanthal Special', category: 'Sweet', rate: 600, besan: 0.5, oil: 0.45, sugar: 0.45, mawa: 0.2 },
+      { id: 'm4', name: 'Dryfruit Ghari', category: 'Sweet', rate: 780, besan: 0.2, oil: 0.4, sugar: 0.35, mawa: 0.5 },
+      { id: 'm5', name: 'Nylon Khaman', category: 'Farsan', rate: 260, besan: 0.6, oil: 0.15, sugar: 0.08, mawa: 0 },
+      { id: 'm6', name: 'Bhavnagari Gathiya', category: 'Farsan', rate: 380, besan: 0.7, oil: 0.4, sugar: 0, mawa: 0 },
+      { id: 'm7', name: 'Fulwadi Dry Masala', category: 'Farsan', rate: 400, besan: 0.65, oil: 0.38, sugar: 0.05, mawa: 0 }
     ];
 
-    // Initial Daily Walk-In Sales (Matching Blueprint Module 3 & 5)
-    const INITIAL_DAILY_SALES = [
-      { id: "ds_101", itemName: "Nylon Khaman", category: "Farsan", qtyKg: 2.5, amount: 600, paymentMethod: "DIRECT", date: TODAY_STR, time: "10:15 AM" },
-      { id: "ds_102", itemName: "Patti Samosa", category: "Farsan", qtyKg: 2.0, amount: 560, paymentMethod: "ONLINE", date: TODAY_STR, time: "11:05 AM" },
-      { id: "ds_103", itemName: "Thabdi Peda", category: "Sweet", qtyKg: 1.0, amount: 560, paymentMethod: "DIRECT", date: TODAY_STR, time: "12:30 PM" },
-      { id: "ds_104", itemName: "Fafda", category: "Farsan", qtyKg: 1.5, amount: 780, paymentMethod: "ONLINE", date: TODAY_STR, time: "01:45 PM" },
-      { id: "ds_105", itemName: "Pure Ghee Jalebi", category: "Sweet", qtyKg: 1.0, amount: 480, paymentMethod: "ONLINE", date: TODAY_STR, time: "04:10 PM" },
-      { id: "ds_106", itemName: "Kaju Katri", category: "Sweet", qtyKg: 2.0, amount: 1840, paymentMethod: "DIRECT", date: "2026-11-11", time: "06:20 PM" },
-      { id: "ds_107", itemName: "Nylon Khaman", category: "Farsan", qtyKg: 3.0, amount: 720, paymentMethod: "DIRECT", date: "2026-11-10", time: "09:40 AM" }
-    ];
+    // App State
+    let isManagerMode = false;
+    let shopMenu = [];
+    let walkinSales = [];
+    let festivalNotesBills = [];
+    let noteBoxLines = [];
+    let fbConfig = { projectId: '', apiKey: '', connected: false };
 
-    // Initial Festival Advance Orders (Matching Blueprint Module 1 & 4)
-    const INITIAL_FESTIVAL_ORDERS = [
-      {
-        id: "fo_201",
-        festival: "Diwali",
-        customerName: "Kiritbhai Shah",
-        phone: "9825011223",
-        itemName: "Kaju Katri",
-        category: "Sweet",
-        boxSizeKg: 1,
-        boxes: 15,
-        totalKg: 15,
-        amount: 13800,
-        pickupDate: TODAY_STR,
-        paymentStatus: "Advance Paid",
-        paymentMethod: "ONLINE",
-        delivered: false
-      },
-      {
-        id: "fo_202",
-        festival: "Diwali",
-        customerName: "Meenaben Desai",
-        phone: "9898122334",
-        itemName: "Fafda",
-        category: "Farsan",
-        boxSizeKg: 1,
-        boxes: 10,
-        totalKg: 10,
-        amount: 5200,
-        pickupDate: TODAY_STR,
-        paymentStatus: "Pending",
-        paymentMethod: "DIRECT",
-        delivered: false
-      },
-      {
-        id: "fo_203",
-        festival: "Rakshabandhan",
-        customerName: "Harshadbhai Patel",
-        phone: "9426055667",
-        itemName: "Kesar Kaju Penda",
-        category: "Sweet",
-        boxSizeKg: 0.5,
-        boxes: 20,
-        totalKg: 10,
-        amount: 6400,
-        pickupDate: TODAY_STR,
-        paymentStatus: "Advance Paid",
-        paymentMethod: "DIRECT",
-        delivered: false
-      },
-      {
-        id: "fo_204",
-        festival: "Navratri",
-        customerName: "Bhaveshbhai Joshi",
-        phone: "9979033445",
-        itemName: "Pure Ghee Jalebi",
-        category: "Sweet",
-        boxSizeKg: 1,
-        boxes: 5,
-        totalKg: 5,
-        amount: 2400,
-        pickupDate: "2026-11-14",
-        paymentStatus: "Advance Paid",
-        paymentMethod: "ONLINE",
-        delivered: false
-      },
-      {
-        id: "fo_205",
-        festival: "Ganesh Chaturthi",
-        customerName: "ashwinbhai Trivedi",
-        phone: "9824099887",
-        itemName: "Motichoor Ladoo",
-        category: "Sweet",
-        boxSizeKg: 1,
-        boxes: 8,
-        totalKg: 8,
-        amount: 3680,
-        pickupDate: "2026-11-15",
-        paymentStatus: "Pending",
-        paymentMethod: "DIRECT",
-        delivered: false
-      }
-    ];
-
-    // CRM Archive (2026 Festival Records for 15-Day Advance Reminder)
-    const INITIAL_CRM_ARCHIVES = [
-      { id: "crm_1", festivalYear: "Diwali 2026", customerName: "Rameshbhai Zaveri (Jewellers)", phone: "9825044556", orderSummary: "25 Boxes × 1kg Kaju Katri + 10kg Fafda", amount: 28200, contacted2026: false },
-      { id: "crm_2", festivalYear: "Diwali 2026", customerName: "Dr. Falguni Mehta", phone: "9898077889", orderSummary: "12 Boxes × 500g Thabdi Peda + 6 Boxes Kaju Penda", amount: 7200, contacted2026: false },
-      { id: "crm_3", festivalYear: "Navratri 2026", customerName: "Sureshbhai Parikh (Society Group)", phone: "9426512345", orderSummary: "40 Boxes × 500g Fafda + 15kg Pure Ghee Jalebi", amount: 17600, contacted2026: true },
-      { id: "crm_4", festivalYear: "Ganesh Chaturthi 2026", customerName: "Navrangpura Yuvak Mandal", phone: "9925166778", orderSummary: "35 Boxes × 1kg Motichoor Ladoo", amount: 16100, contacted2026: false },
-      { id: "crm_5", festivalYear: "Rakshabandhan 2026", customerName: "Jigneshbhai Contractor", phone: "9879123987", orderSummary: "18 Boxes × 1kg Kesar Kaju Penda", amount: 11520, contacted2026: false }
-    ];
-
-    // Application Reactive State
-    const state = {
-      isManager: false,
-      activeTab: "dashboard",
-      activeFestival: "Rakshabandhan",
-      dailyPayMethod: "DIRECT",
-      firebaseConnected: false,
-      db: null,
-      menu: [...INITIAL_MENU],
-      dailySales: [...INITIAL_DAILY_SALES],
-      festivalOrders: [...INITIAL_FESTIVAL_ORDERS],
-      crmArchives: [...INITIAL_CRM_ARCHIVES]
+    /********************************************************************
+     * 2. INITIALIZATION ON LOAD
+     ********************************************************************/
+    window.onload = function () {
+      loadLocalData();
+      setTodayInNoteDate();
+      initFirstNoteBoxLine();
+      populatePosAndRawSelects();
+      updateQuickBoxTable();
+      renderSavedFestivalNotes();
+      renderWalkinLedger();
+      renderCrmTable();
+      renderMenuEditor();
     };
 
-    let matrixChartInstance = null;
+    function loadLocalData() {
+      const savedMenu = localStorage.getItem('tulsi_menu_v1');
+      shopMenu = savedMenu ? JSON.parse(savedMenu) : [...INITIAL_MENU];
 
-    // Toast Helper
-    function showToast(message, type = "success") {
-      const container = document.getElementById("toastContainer");
-      const el = document.createElement("div");
-      const bgClass = type === "error" ? "bg-red-800 border-red-400" : "bg-gray-900 border-amber-400";
-      el.className = `${bgClass} text-white px-4 py-3 rounded-xl shadow-xl border-l-4 text-xs font-bold flex items-center gap-2 transition-all duration-300`;
-      el.innerHTML = `<span>${message}</span>`;
-      container.appendChild(el);
-      setTimeout(() => {
-        el.style.opacity = "0";
-        setTimeout(() => el.remove(), 300);
-      }, 3200);
-    }
+      const savedWalkin = localStorage.getItem('tulsi_walkin_v1');
+      walkinSales = savedWalkin ? JSON.parse(savedWalkin) : [];
 
-    // Format Currency (Indian Rupee System)
-    function formatINR(val) {
-      const num = Math.round(Number(val) || 0);
-      return "₹" + num.toLocaleString("en-IN");
-    }
-
-    // ==========================================================
-    // FIREBASE CLOUD SYNC ENGINE
-    // ==========================================================
-    async function connectFirebase(configObj) {
-      try {
-        const app = initializeApp(configObj, "tulsiFarsanApp_" + Date.now());
-        const db = getFirestore(app);
-        state.db = db;
-        state.firebaseConnected = true;
-
-        const badge = document.getElementById("syncBadge");
-        badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500 text-red-950";
-        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-white animate-ping"></span> Live Firebase Synced`;
-
-        // Attach Live Listeners for all 4 Shop Collections
-        onSnapshot(collection(db, "shops/tulsi_farsan/menu"), (snap) => {
-          if (!snap.empty) {
-            state.menu = snap.docs.map(d => d.data());
-            populateItemDropdowns();
-            renderAll();
-          }
-        });
-        onSnapshot(collection(db, "shops/tulsi_farsan/dailySales"), (snap) => {
-          if (!snap.empty) {
-            state.dailySales = snap.docs.map(d => d.data());
-            renderAll();
-          }
-        });
-        onSnapshot(collection(db, "shops/tulsi_farsan/festivalOrders"), (snap) => {
-          if (!snap.empty) {
-            state.festivalOrders = snap.docs.map(d => d.data());
-            renderAll();
-          }
-        });
-        onSnapshot(collection(db, "shops/tulsi_farsan/crmArchives"), (snap) => {
-          if (!snap.empty) {
-            state.crmArchives = snap.docs.map(d => d.data());
-            renderAll();
-          }
-        });
-        showToast("Connected to Firebase Firestore! Real-time multi-device sync active.");
-      } catch (err) {
-        showToast("Firebase config error: verify JSON keys.", "error");
-      }
-    }
-
-    async function syncDocToFirebase(collectionName, docObj) {
-      if (!state.firebaseConnected || !state.db) return;
-      try {
-        await setDoc(doc(state.db, `shops/tulsi_farsan/${collectionName}`, docObj.id), docObj);
-      } catch (e) {
-        // Fallback silently in sandbox preview
-      }
-    }
-
-    async function deleteDocFromFirebase(collectionName, docId) {
-      if (!state.firebaseConnected || !state.db) return;
-      try {
-        await deleteDoc(doc(state.db, `shops/tulsi_farsan/${collectionName}`, docId));
-      } catch (e) {}
-    }
-
-    // ==========================================================
-    // RENDER 1: DASHBOARD KPI, SAMAN TRACKER & TODAY'S PICKUPS
-    // ==========================================================
-    function renderDashboard() {
-      const pickupFilterDate = document.getElementById("pickupDateFilter").value || TODAY_STR;
-      const festFilter = document.getElementById("samanFestivalFilter").value;
-
-      // 1. Today's Counter Sales KPI
-      const todaySales = state.dailySales.filter(s => s.date === TODAY_STR);
-      const todayTotal = todaySales.reduce((acc, s) => acc + Number(s.amount), 0);
-      const todayCash = todaySales.filter(s => s.paymentMethod === "DIRECT").reduce((a, s) => a + Number(s.amount), 0);
-      const todayUpi = todaySales.filter(s => s.paymentMethod === "ONLINE").reduce((a, s) => a + Number(s.amount), 0);
-
-      document.getElementById("kpiTodaySales").textContent = formatINR(todayTotal);
-      document.getElementById("kpiTodaySplit").textContent = `Cash: ${formatINR(todayCash)} | UPI: ${formatINR(todayUpi)}`;
-
-      // 2. Today's Pickups KPI & List
-      const pickupsDue = state.festivalOrders.filter(o => o.pickupDate === pickupFilterDate);
-      const pendingPickups = pickupsDue.filter(o => o.paymentStatus === "Pending").length;
-      document.getElementById("kpiTodayPickups").textContent = `${pickupsDue.length} Orders`;
-      document.getElementById("kpiTodayPickupsPending").textContent = `Pending Payment: ${pendingPickups}`;
-
-      const pickupContainer = document.getElementById("todaysPickupsList");
-      if (pickupsDue.length === 0) {
-        pickupContainer.innerHTML = `<div class="p-6 text-center text-gray-400 text-xs font-bold border border-dashed rounded-xl">No advance pickups scheduled for ${pickupFilterDate}.</div>`;
+      const savedNotes = localStorage.getItem('tulsi_festival_notes_v1');
+      if (savedNotes) {
+        festivalNotesBills = JSON.parse(savedNotes);
       } else {
-        pickupContainer.innerHTML = pickupsDue.map(o => `
-          <div class="p-3.5 rounded-xl border ${o.delivered ? 'bg-gray-50 border-gray-200 opacity-75' : 'bg-amber-50/60 border-amber-300'} flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="font-extrabold text-sm text-gray-900">${o.customerName}</span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-extrabold ${o.paymentStatus === 'Advance Paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
-                  ${o.paymentStatus}
-                </span>
-              </div>
-              <p class="text-xs font-bold text-[#D32F2F] mt-0.5">${o.boxes} Boxes × ${o.boxSizeKg}kg ${o.itemName} (${o.totalKg}kg) • ${formatINR(o.amount)}</p>
-              <p class="text-[11px] text-gray-500">📞 ${o.phone} • ${o.festival}</p>
+        // Sample Festival Bill Note so the shop owner sees how customer bills look immediately
+        festivalNotesBills = [
+          {
+            id: 'note_demo_1',
+            festival: 'Diwali 2026',
+            date: '12/11/2026',
+            customerName: 'Rameshbhai Patel',
+            contactNo: '9825012345',
+            remark: 'Corporate gift boxes with ribbon',
+            lines: [
+              { sweetType: 'Kaju Katri 500g Box', boxes: 15, ratePerBox: 460, lineTotal: 6900 },
+              { sweetType: 'Dryfruit Mix Box', boxes: 5, ratePerBox: 650, lineTotal: 3250 }
+            ],
+            totalBoxes: 20,
+            grandTotal: 10150,
+            createdAt: new Date().toISOString()
+          }
+        ];
+        localStorage.setItem('tulsi_festival_notes_v1', JSON.stringify(festivalNotesBills));
+      }
+
+      const savedFb = localStorage.getItem('tulsi_fb_config');
+      if (savedFb) {
+        fbConfig = JSON.parse(savedFb);
+        document.getElementById('fbProjectIdInput').value = fbConfig.projectId || '';
+        document.getElementById('fbApiKeyInput').value = fbConfig.apiKey || '';
+        if (fbConfig.projectId && fbConfig.apiKey) {
+          setSyncBadge(true);
+          fetchCloudCollection('festival_notes');
+        }
+      }
+    }
+
+    /********************************************************************
+     * 3. FESTIVAL NOTES & BILL GENERATOR LOGIC
+     ********************************************************************/
+    function handleFestivalHeadingChange() {
+      const selectEl = document.getElementById('festivalSelector');
+      const customInput = document.getElementById('customFestivalInput');
+      const headingEl = document.getElementById('dynamicNoteFestivalHeading');
+
+      if (selectEl.value === 'Custom') {
+        customInput.classList.remove('hidden');
+        customInput.focus();
+        headingEl.textContent = customInput.value.trim() || 'Custom Festival 2026';
+      } else {
+        customInput.classList.add('hidden');
+        headingEl.textContent = selectEl.value;
+      }
+    }
+
+    function syncCustomFestivalHeading() {
+      const customVal = document.getElementById('customFestivalInput').value.trim();
+      document.getElementById('dynamicNoteFestivalHeading').textContent = customVal || 'Custom Festival 2026';
+    }
+
+    function setTodayInNoteDate() {
+      const now = new Date();
+      const dd = String(now.getDate()).padStart(2, '0');
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const yyyy = now.getFullYear();
+      document.getElementById('noteManualDate').value = `${dd}/${mm}/${yyyy}`;
+    }
+
+    // Enforce numeric value up to 10 digits for Contact No
+    function enforceTenDigitPhone(inputEl) {
+      const cleaned = inputEl.value.replace(/\D/g, '').slice(0, 10);
+      inputEl.value = cleaned;
+      const counter = document.getElementById('phoneDigitCounter');
+      counter.textContent = `${cleaned.length} / 10 digits`;
+      if (cleaned.length === 10) {
+        counter.className = 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-800';
+      } else {
+        counter.className = 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900';
+      }
+    }
+
+    function initFirstNoteBoxLine() {
+      noteBoxLines = [
+        { id: 'line_' + Date.now(), sweetType: '', boxes: 1, ratePerBox: '' }
+      ];
+      renderNoteBoxLines();
+    }
+
+    function addNoteBoxLine() {
+      noteBoxLines.push({
+        id: 'line_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        sweetType: '',
+        boxes: 1,
+        ratePerBox: ''
+      });
+      renderNoteBoxLines();
+    }
+
+    function removeNoteBoxLine(lineId) {
+      if (noteBoxLines.length <= 1) {
+        showToast('At least one sweet box row is required on the bill pad.', 'amber');
+        return;
+      }
+      noteBoxLines = noteBoxLines.filter(l => l.id !== lineId);
+      renderNoteBoxLines();
+    }
+
+    function renderNoteBoxLines() {
+      const container = document.getElementById('noteBoxLinesContainer');
+      container.innerHTML = '';
+
+      noteBoxLines.forEach((line, idx) => {
+        const boxesNum = parseFloat(line.boxes) || 0;
+        const rateNum = parseFloat(line.ratePerBox) || 0;
+        const lineTotal = boxesNum * rateNum;
+
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'bg-white/95 p-4 rounded-xl border-2 border-amber-200 shadow-xs space-y-3';
+        rowDiv.innerHTML = `
+          <div class="flex items-center justify-between border-b border-amber-100 pb-2">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-tulsiRed">
+              Box Entry #${idx + 1}
+            </span>
+            ${noteBoxLines.length > 1 ? `
+              <button type="button" onclick="removeNoteBoxLine('${line.id}')" class="text-xs text-red-600 hover:text-red-800 font-bold flex items-center gap-1">
+                <i class="fa-solid fa-trash-can"></i> Remove Line
+              </button>
+            ` : ''}
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+            <!-- Sweet Type Manual Entry -->
+            <div class="md:col-span-4">
+              <label class="block text-[11px] font-extrabold uppercase text-gray-700 mb-1">
+                Sweet Type (Write Manually)
+              </label>
+              <input
+                type="text"
+                value="${escapeHtml(line.sweetType)}"
+                oninput="updateLineField('${line.id}', 'sweetType', this.value)"
+                placeholder="e.g. Kaju Katri / Mixed Sweet"
+                class="w-full px-3 py-2 bg-amber-50/50 border border-amber-300 rounded-xl font-bold text-sm text-gray-900 focus:outline-none focus:border-tulsiRed"
+              />
             </div>
+
+            <!-- No. of Boxes: Select Bar (Slider) + Manual Input -->
+            <div class="md:col-span-4 bg-amber-50/70 p-2.5 rounded-xl border border-amber-200">
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-[11px] font-extrabold uppercase text-red-900">
+                  No. of Boxes (Slide or Type)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="5000"
+                  value="${line.boxes}"
+                  oninput="updateLineBoxCount('${line.id}', this.value)"
+                  class="w-20 text-center font-extrabold text-sm bg-white border-2 border-amber-400 rounded-lg py-0.5 text-red-950"
+                />
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="100"
+                value="${Math.min(100, Math.max(1, line.boxes || 1))}"
+                oninput="updateLineBoxCount('${line.id}', this.value)"
+                class="box-slider"
+              />
+              <div class="flex justify-between text-[10px] font-bold text-gray-500 mt-1">
+                <button type="button" onclick="updateLineBoxCount('${line.id}', 1)" class="hover:text-tulsiRed">1 Box</button>
+                <button type="button" onclick="updateLineBoxCount('${line.id}', 5)" class="hover:text-tulsiRed">5</button>
+                <button type="button" onclick="updateLineBoxCount('${line.id}', 10)" class="hover:text-tulsiRed">10</button>
+                <button type="button" onclick="updateLineBoxCount('${line.id}', 25)" class="hover:text-tulsiRed">25</button>
+                <button type="button" onclick="updateLineBoxCount('${line.id}', 50)" class="hover:text-tulsiRed">50</button>
+                <button type="button" onclick="updateLineBoxCount('${line.id}', 100)" class="hover:text-tulsiRed">100</button>
+              </div>
+            </div>
+
+            <!-- Rate Per Box (Write Manually) -->
+            <div class="md:col-span-2">
+              <label class="block text-[11px] font-extrabold uppercase text-gray-700 mb-1">
+                Rate / Box (₹)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="any"
+                value="${line.ratePerBox}"
+                oninput="updateLineField('${line.id}', 'ratePerBox', this.value)"
+                placeholder="₹ Rate"
+                class="w-full px-3 py-2 bg-amber-50/50 border border-amber-300 rounded-xl font-extrabold text-sm text-gray-900 focus:outline-none focus:border-tulsiRed"
+              />
+            </div>
+
+            <!-- Calculated Line Box Price -->
+            <div class="md:col-span-2 bg-red-50 border border-red-200 rounded-xl p-2.5 text-right">
+              <span class="block text-[10px] font-bold uppercase text-red-800">Box Line Total</span>
+              <span id="lineTotalText_${line.id}" class="text-base font-extrabold text-tulsiRed">
+                ₹${lineTotal.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+        `;
+        container.appendChild(rowDiv);
+      });
+
+      recalculateNoteGrandTotal();
+    }
+
+    function updateLineField(lineId, field, value) {
+      const target = noteBoxLines.find(l => l.id === lineId);
+      if (!target) return;
+      target[field] = value;
+
+      const boxesNum = parseFloat(target.boxes) || 0;
+      const rateNum = parseFloat(target.ratePerBox) || 0;
+      const lineTotal = boxesNum * rateNum;
+      const lineTotalEl = document.getElementById('lineTotalText_' + lineId);
+      if (lineTotalEl) {
+        lineTotalEl.textContent = '₹' + lineTotal.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+      }
+      recalculateNoteGrandTotal();
+    }
+
+    function updateLineBoxCount(lineId, newCount) {
+      const target = noteBoxLines.find(l => l.id === lineId);
+      if (!target) return;
+      target.boxes = Math.max(0, parseInt(newCount, 10) || 0);
+      renderNoteBoxLines();
+    }
+
+    function recalculateNoteGrandTotal() {
+      let totalBoxes = 0;
+      let grandTotal = 0;
+      noteBoxLines.forEach(l => {
+        const b = parseFloat(l.boxes) || 0;
+        const r = parseFloat(l.ratePerBox) || 0;
+        totalBoxes += b;
+        grandTotal += b * r;
+      });
+
+      document.getElementById('noteSummaryTotalBoxes').textContent = totalBoxes;
+      document.getElementById('noteGrandTotalDisplay').textContent =
+        '₹' + grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function resetFestivalNotePad() {
+      document.getElementById('noteCustName').value = '';
+      document.getElementById('noteCustPhone').value = '';
+      document.getElementById('notePlainRemark').value = '';
+      enforceTenDigitPhone(document.getElementById('noteCustPhone'));
+      setTodayInNoteDate();
+      initFirstNoteBoxLine();
+      showToast('Festival Note Pad cleared and ready for next customer.', 'amber');
+    }
+
+    // SAVE FESTIVAL BILL RECORD UNDER CUSTOMER NAME
+    function saveCustomerFestivalBill() {
+      const festivalHeading = document.getElementById('dynamicNoteFestivalHeading').textContent.trim();
+      const manualDate = document.getElementById('noteManualDate').value.trim() || 'No Date';
+      const customerName = document.getElementById('noteCustName').value.trim();
+      const contactNo = document.getElementById('noteCustPhone').value.trim();
+      const remark = document.getElementById('notePlainRemark').value.trim();
+
+      if (!customerName) {
+        showToast('Please write the Customer Name before saving the bill.', 'red');
+        document.getElementById('noteCustName').focus();
+        return;
+      }
+
+      if (contactNo.length !== 10) {
+        showToast('Please enter a valid 10-digit Contact Number.', 'red');
+        document.getElementById('noteCustPhone').focus();
+        return;
+      }
+
+      // Validate box lines
+      const cleanedLines = [];
+      let totalBoxes = 0;
+      let grandTotal = 0;
+
+      for (const line of noteBoxLines) {
+        const sweet = (line.sweetType || '').trim() || 'Assorted Sweet Box';
+        const boxes = parseFloat(line.boxes) || 0;
+        const rate = parseFloat(line.ratePerBox) || 0;
+        if (boxes <= 0 || rate <= 0) {
+          showToast('Please enter a valid No. of Boxes and Rate per Box.', 'red');
+          return;
+        }
+        const lineTotal = boxes * rate;
+        totalBoxes += boxes;
+        grandTotal += lineTotal;
+        cleanedLines.push({
+          sweetType: sweet,
+          boxes,
+          ratePerBox: rate,
+          lineTotal
+        });
+      }
+
+      const newBillRecord = {
+        id: 'bill_' + Date.now(),
+        festival: festivalHeading,
+        date: manualDate,
+        customerName,
+        contactNo,
+        remark,
+        lines: cleanedLines,
+        totalBoxes,
+        grandTotal,
+        createdAt: new Date().toISOString()
+      };
+
+      festivalNotesBills.unshift(newBillRecord);
+      localStorage.setItem('tulsi_festival_notes_v1', JSON.stringify(festivalNotesBills));
+
+      // Sync to Firebase if connected
+      if (fbConfig.projectId && fbConfig.apiKey) {
+        syncDocumentToFirestore('festival_notes', newBillRecord.id, newBillRecord);
+      }
+
+      renderSavedFestivalNotes();
+      renderCrmTable();
+      resetFestivalNotePad();
+      showToast(`Bill saved under customer name: "${customerName}" (₹${grandTotal.toLocaleString('en-IN')})`, 'green');
+    }
+
+    function renderSavedFestivalNotes() {
+      const grid = document.getElementById('savedFestivalNotesGrid');
+      const searchQ = (document.getElementById('searchSavedNotesInput').value || '').toLowerCase().trim();
+      const festFilter = document.getElementById('filterSavedNotesFestival').value;
+
+      const filtered = festivalNotesBills.filter(bill => {
+        const matchesFest = festFilter === 'ALL' || bill.festival === festFilter;
+        const matchesSearch =
+          !searchQ ||
+          bill.customerName.toLowerCase().includes(searchQ) ||
+          bill.contactNo.includes(searchQ) ||
+          bill.lines.some(l => l.sweetType.toLowerCase().includes(searchQ));
+        return matchesFest && matchesSearch;
+      });
+
+      document.getElementById('savedNotesCountBadge').textContent = `${filtered.length} Saved Bill${filtered.length === 1 ? '' : 's'}`;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-8 text-gray-500 text-sm bg-amber-50/40 rounded-xl border border-dashed border-amber-300">
+            No saved customer festival bills match your filter. Use the Festival Note Pad above and tap <strong>Save Bill Record</strong>.
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = '';
+      filtered.forEach(bill => {
+        const linesHtml = bill.lines
+          .map(
+            l => `
+            <div class="flex items-center justify-between text-xs py-1 border-b border-amber-100 last:border-none">
+              <span class="font-bold text-gray-800">${escapeHtml(l.sweetType)}</span>
+              <span class="text-gray-600">${l.boxes} Box × ₹${l.ratePerBox} = <strong class="text-red-900">₹${l.lineTotal.toLocaleString('en-IN')}</strong></span>
+            </div>`
+          )
+          .join('');
+
+        const card = document.createElement('div');
+        card.className = 'bg-cream rounded-2xl p-4 border-2 border-amber-300 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-3';
+        card.innerHTML = `
+          <div class="space-y-2">
+            <!-- Top Badge: Festival Heading & Manual Date -->
+            <div class="flex items-center justify-between gap-2">
+              <span class="bg-tulsiRed text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                ${escapeHtml(bill.festival)}
+              </span>
+              <span class="text-xs font-bold text-gray-600">
+                <i class="fa-regular fa-calendar mr-1"></i>${escapeHtml(bill.date)}
+              </span>
+            </div>
+
+            <!-- Saved Bill Title: Customer Name & 10-Digit Contact -->
+            <div class="bg-white p-3 rounded-xl border border-amber-200">
+              <div class="text-[10px] font-extrabold uppercase text-amber-800">Saved Customer Bill Record</div>
+              <h4 class="font-display font-extrabold text-base text-gray-900 truncate">${escapeHtml(bill.customerName)}</h4>
+              <p class="text-xs font-bold text-gray-600 mt-0.5">
+                <i class="fa-solid fa-phone text-tulsiRed mr-1"></i>+91 ${escapeHtml(bill.contactNo)}
+              </p>
+            </div>
+
+            <!-- Sweet Box Breakdown -->
+            <div class="bg-white/80 px-3 py-2 rounded-xl border border-amber-200">
+              ${linesHtml}
+            </div>
+
+            ${bill.remark ? `<p class="text-[11px] italic text-gray-600 px-1">"${escapeHtml(bill.remark)}"</p>` : ''}
+          </div>
+
+          <!-- Footer Total & Actions -->
+          <div class="pt-2 border-t border-amber-300 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-bold uppercase text-gray-500 block">${bill.totalBoxes} Boxes Total</span>
+              <span class="text-lg font-extrabold text-tulsiRed">₹${bill.grandTotal.toLocaleString('en-IN')}</span>
+            </div>
+
             <div class="flex items-center gap-1.5">
-              ${o.paymentStatus === 'Pending' ? `<button data-action="markPaid" data-id="${o.id}" class="tap-btn px-2.5 py-1.5 rounded-lg bg-amber-500 text-red-950 font-extrabold text-xs">Collect ₹</button>` : ''}
-              <button data-action="toggleDelivered" data-id="${o.id}" class="tap-btn px-3 py-1.5 rounded-lg ${o.delivered ? 'bg-gray-300 text-gray-700' : 'bg-emerald-600 text-white'} font-extrabold text-xs">
-                ${o.delivered ? '✓ Picked Up' : 'Mark Ready'}
+              <button
+                type="button"
+                onclick="openReceiptModal('${bill.id}')"
+                class="bg-amber-400 hover:bg-amber-300 text-red-950 font-bold text-xs px-3 py-2 rounded-xl shadow-xs flex items-center gap-1"
+              >
+                <i class="fa-solid fa-receipt"></i> View Bill
+              </button>
+              <button
+                type="button"
+                onclick="deleteFestivalBill('${bill.id}')"
+                title="Delete Bill (Requires Manager PIN 2009)"
+                class="bg-red-100 hover:bg-red-200 text-red-800 font-bold text-xs px-2.5 py-2 rounded-xl"
+              >
+                <i class="fa-solid fa-trash-can"></i>
               </button>
             </div>
           </div>
-        `).join("");
-      }
-
-      // 3. Festival Saman Tracker (Finished Goods + Raw Material Estimate)
-      const filteredOrders = festFilter === "ALL"
-        ? state.festivalOrders
-        : state.festivalOrders.filter(o => o.festival === festFilter);
-
-      let totalFestivalKgAll = 0;
-      let rawTotals = { sugar: 0, besan: 0, mawa: 0, oil: 0 };
-
-      const finishedHtml = state.menu.map(item => {
-        const orderedKg = filteredOrders
-          .filter(o => o.itemName === item.name)
-          .reduce((sum, o) => sum + Number(o.totalKg), 0);
-
-        const factor = festFilter === "ALL" ? 1 : 0.35;
-        const totalToMakeKg = Math.round((item.baseFestivalKg * factor) + orderedKg);
-        totalFestivalKgAll += totalToMakeKg;
-
-        // Calculate Raw Saman Needed
-        const r = item.recipe || { besan: 0.3, oil: 0.2, sugar: 0.3, mawa: 0.2 };
-        rawTotals.sugar += totalToMakeKg * r.sugar;
-        rawTotals.besan += totalToMakeKg * r.besan;
-        rawTotals.mawa += totalToMakeKg * r.mawa;
-        rawTotals.oil += totalToMakeKg * r.oil;
-
-        const statusDot = totalToMakeKg > 150 ? "bg-amber-500" : "bg-emerald-500";
-        return `
-          <div class="px-3.5 py-2.5 rounded-xl bg-gray-50 hover:bg-red-50/40 border border-gray-200 flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <span class="w-2.5 h-2.5 rounded-full ${statusDot}"></span>
-              <div>
-                <p class="font-extrabold text-sm text-gray-900">${item.name} — <span class="text-[#D32F2F]">${totalToMakeKg} Kg</span></p>
-                <p class="text-[11px] text-gray-500">Booked Orders: ${orderedKg} kg | Counter Buffer: ${Math.round(item.baseFestivalKg * factor)} kg</p>
-              </div>
-            </div>
-            <span class="text-xs font-bold px-2 py-0.5 rounded bg-white border border-gray-200 text-gray-700">${item.category}</span>
-          </div>
         `;
-      }).join("");
-
-      document.getElementById("finishedGoodsList").innerHTML = finishedHtml;
-      document.getElementById("kpiTotalFestivalKg").textContent = `${totalFestivalKgAll} kg`;
-      document.getElementById("kpiCrmCount").textContent = `${state.crmArchives.length} VIPs`;
-
-      // Render Raw Material Bars
-      const rawSpecs = [
-        { label: "Sugar (Khand)", kg: Math.round(rawTotals.sugar), max: 400, color: "bg-amber-600" },
-        { label: "Besan (Gram Flour)", kg: Math.round(rawTotals.besan), max: 300, color: "bg-[#D32F2F]" },
-        { label: "Fresh Mawa / Khoya", kg: Math.round(rawTotals.mawa), max: 350, color: "bg-amber-700" },
-        { label: "Groundnut Oil & Pure Ghee", kg: Math.round(rawTotals.oil), max: 250, color: "bg-orange-500" }
-      ];
-
-      document.getElementById("rawMaterialsList").innerHTML = rawSpecs.map(rm => {
-        const pct = Math.min(100, Math.round((rm.kg / rm.max) * 100));
-        return `
-          <div>
-            <div class="flex justify-between text-xs font-extrabold text-amber-950 mb-1">
-              <span>${rm.label}:</span>
-              <span>${rm.kg} kg</span>
-            </div>
-            <div class="w-full h-2.5 bg-amber-200/70 rounded-full overflow-hidden">
-              <div class="${rm.color} h-full rounded-full transition-all duration-300" style="width: ${pct}%"></div>
-            </div>
-          </div>
-        `;
-      }).join("");
-
-      document.getElementById("quickStockAlertText").textContent =
-        `Need ${Math.round(rawTotals.sugar)}kg Sugar, ${Math.round(rawTotals.besan)}kg Besan & ${Math.round(rawTotals.mawa)}kg Mawa for ${festFilter === 'ALL' ? 'all upcoming festivals' : festFilter}.`;
-    }
-
-    // ==========================================================
-    // RENDER 2: DAILY SALE FORM DROPDOWNS & LIVE LEDGER
-    // ==========================================================
-    function populateItemDropdowns() {
-      const dailySelect = document.getElementById("dailyItemSelect");
-      const festSelect = document.getElementById("festItemSelect");
-      const currentDailyVal = dailySelect.value;
-      const currentFestVal = festSelect.value;
-
-      const optionsHtml = state.menu.map(item =>
-        `<option value="${item.name}">${item.name} (${item.category}) — ₹${item.pricePerKg}/kg</option>`
-      ).join("");
-
-      dailySelect.innerHTML = optionsHtml;
-      festSelect.innerHTML = optionsHtml;
-
-      if (currentDailyVal && state.menu.some(m => m.name === currentDailyVal)) {
-        dailySelect.value = currentDailyVal;
-      }
-      if (currentFestVal && state.menu.some(m => m.name === currentFestVal)) {
-        festSelect.value = currentFestVal;
-      }
-      updateDailyCalculatedPrice();
-      updateFestivalCalculatedPrice();
-    }
-
-    function updateDailyCalculatedPrice() {
-      const selectedName = document.getElementById("dailyItemSelect").value;
-      const qty = parseFloat(document.getElementById("dailyQtyInput").value) || 0;
-      const itemObj = state.menu.find(m => m.name === selectedName) || state.menu[0];
-      if (!itemObj) return;
-      document.getElementById("dailyUnitRateLabel").textContent = `Rate: ₹${itemObj.pricePerKg}/kg`;
-      document.getElementById("dailyAmountInput").value = Math.round(qty * itemObj.pricePerKg);
-    }
-
-    function updateFestivalCalculatedPrice() {
-      const selectedName = document.getElementById("festItemSelect").value;
-      const boxSize = parseFloat(document.getElementById("festBoxSize").value) || 1;
-      const boxCount = parseInt(document.getElementById("festBoxCount").value, 10) || 1;
-      const itemObj = state.menu.find(m => m.name === selectedName) || state.menu[0];
-      if (!itemObj) return;
-      document.getElementById("festTotalAmount").value = Math.round(boxSize * boxCount * itemObj.pricePerKg);
-    }
-
-    function renderLiveLedger() {
-      const catFilter = document.getElementById("ledgerFilterCategory").value;
-      const payFilter = document.getElementById("ledgerFilterPayment").value;
-
-      const filtered = state.dailySales.filter(tx => {
-        const matchCat = catFilter === "ALL" || tx.category === catFilter;
-        const matchPay = payFilter === "ALL" || tx.paymentMethod === payFilter;
-        return matchCat && matchPay;
+        grid.appendChild(card);
       });
-
-      document.getElementById("ledgerCountSummary").textContent = `Showing ${filtered.length} transactions`;
-
-      const container = document.getElementById("liveLedgerContainer");
-      if (filtered.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-gray-400 font-bold text-sm border border-dashed rounded-2xl">No walk-in transactions match this filter.</div>`;
-        return;
-      }
-
-      container.innerHTML = filtered.map(tx => `
-        <div class="p-3.5 rounded-xl bg-gray-50 hover:bg-amber-50/40 border border-gray-200 flex items-center justify-between gap-3">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="font-extrabold text-sm md:text-base text-gray-900">${tx.itemName} (${tx.qtyKg}kg) — <span class="text-[#D32F2F]">${formatINR(tx.amount)}</span></span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-extrabold ${tx.paymentMethod === 'DIRECT' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">
-                ${tx.paymentMethod === 'DIRECT' ? '💵 CASH' : '📱 UPI'}
-              </span>
-            </div>
-            <p class="text-xs text-gray-500 mt-0.5">Date: ${tx.date} • Time: ${tx.time} • Category: ${tx.category}</p>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <button data-action="deleteDailyTx" data-id="${tx.id}" title="Delete Entry (Manager PIN)" class="tap-btn p-2 rounded-lg text-gray-400 hover:text-red-700 hover:bg-red-50">
-              🗑️
-            </button>
-          </div>
-        </div>
-      `).join("");
     }
 
-    // ==========================================================
-    // RENDER 3: FESTIVAL ORDERS & CELEBRATION CARDS
-    // ==========================================================
-    function renderFestivalSection() {
-      document.getElementById("activeFestivalBadge").textContent = state.activeFestival;
-      document.getElementById("festivalListTitle").textContent = state.activeFestival;
+    function openReceiptModal(billId) {
+      const bill = festivalNotesBills.find(b => b.id === billId);
+      if (!bill) return;
 
-      // Highlight selected festival card
-      document.querySelectorAll(".festival-card-btn").forEach(btn => {
-        const isSelected = btn.dataset.festival === state.activeFestival;
-        btn.className = isSelected
-          ? "festival-card-btn tap-btn p-4 rounded-2xl bg-[#D32F2F] text-white border-2 border-amber-400 shadow-md flex flex-col items-center text-center"
-          : "festival-card-btn tap-btn p-4 rounded-2xl bg-white text-red-950 border-2 border-amber-300 hover:border-red-600 shadow-sm flex flex-col items-center text-center";
-      });
+      document.getElementById('receiptFestivalHeading').textContent = bill.festival;
+      document.getElementById('receiptDateText').textContent = 'Date: ' + bill.date;
+      document.getElementById('receiptCustName').textContent = bill.customerName;
+      document.getElementById('receiptCustPhone').textContent = bill.contactNo;
 
-      const orders = state.festivalOrders.filter(o => o.festival === state.activeFestival);
-      const totalAmt = orders.reduce((s, o) => s + Number(o.amount), 0);
-      const totalKg = orders.reduce((s, o) => s + Number(o.totalKg), 0);
-      document.getElementById("festivalSummaryStats").textContent =
-        `${orders.length} Advance Orders • Total Weight: ${totalKg} kg • Value: ${formatINR(totalAmt)}`;
-
-      const listEl = document.getElementById("festivalOrdersList");
-      if (orders.length === 0) {
-        listEl.innerHTML = `<div class="p-8 text-center text-gray-400 font-bold text-sm border border-dashed rounded-2xl">No advance orders yet for ${state.activeFestival}. Use the form on the left to add one!</div>`;
-        return;
-      }
-
-      listEl.innerHTML = orders.map(o => {
-        const waMsg = encodeURIComponent(`Namaste ${o.customerName}, your Tulsi Farsan ${o.festival} order (${o.boxes} boxes x ${o.boxSizeKg}kg ${o.itemName} = ${formatINR(o.amount)}) is scheduled for pickup on ${o.pickupDate}.`);
-        return `
-          <div class="p-4 rounded-xl bg-amber-50/50 border border-amber-200 flex flex-wrap items-center justify-between gap-3">
+      const listEl = document.getElementById('receiptItemsList');
+      listEl.innerHTML = bill.lines
+        .map(
+          l => `
+          <div class="py-1.5 flex items-center justify-between">
             <div>
-              <div class="flex items-center gap-2">
-                <span class="font-extrabold text-sm md:text-base text-red-950">${o.customerName}</span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-extrabold ${o.paymentStatus === 'Advance Paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-200 text-amber-950'}">
-                  ${o.paymentStatus} (${o.paymentMethod})
-                </span>
-              </div>
-              <p class="text-xs font-extrabold text-[#D32F2F] mt-0.5">
-                ${o.boxes} Boxes × ${o.boxSizeKg}kg ${o.itemName} (${o.totalKg}kg) — ${formatINR(o.amount)}
-              </p>
-              <p class="text-xs text-gray-600 mt-0.5">📅 Pickup: <strong>${o.pickupDate}</strong> • 📞 ${o.phone}</p>
+              <div class="font-bold text-gray-900">${escapeHtml(l.sweetType)}</div>
+              <div class="text-[11px] text-gray-600">${l.boxes} Boxes × ₹${l.ratePerBox} / box</div>
             </div>
-            <div class="flex items-center gap-2">
-              <a href="https://wa.me/91${o.phone.replace(/\D/g, '')}?text=${waMsg}" target="_blank" rel="noopener noreferrer" class="tap-btn px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center gap-1 shadow-sm">
-                <span>📞 Call / WA</span>
-              </a>
-              <button data-action="deleteFestOrder" data-id="${o.id}" class="tap-btn p-2 rounded-lg text-gray-400 hover:text-red-700">🗑️</button>
-            </div>
+            <div class="font-extrabold text-gray-900">₹${l.lineTotal.toLocaleString('en-IN')}</div>
           </div>
-        `;
-      }).join("");
-    }
+        `
+        )
+        .join('');
 
-    // ==========================================================
-    // RENDER 4: NORMAL DAYS CALCULATOR & 2x2 FESTIVAL MATRIX
-    // ==========================================================
-    function renderCalculators() {
-      const startStr = document.getElementById("calcStartDate").value || "2026-01-01";
-      const endStr = document.getElementById("calcEndDate").value || "2026-12-31";
-
-      // 4a) Normal Days Date-Range Filter
-      const rangeSales = state.dailySales.filter(s => s.date >= startStr && s.date <= endStr);
-      const totalSum = rangeSales.reduce((a, s) => a + Number(s.amount), 0);
-      const cashSum = rangeSales.filter(s => s.paymentMethod === "DIRECT").reduce((a, s) => a + Number(s.amount), 0);
-      const upiSum = rangeSales.filter(s => s.paymentMethod === "ONLINE").reduce((a, s) => a + Number(s.amount), 0);
-
-      const cashPct = totalSum > 0 ? Math.round((cashSum / totalSum) * 100) : 0;
-      const upiPct = totalSum > 0 ? (100 - cashPct) : 0;
-
-      document.getElementById("normalCalcTotalSum").textContent = formatINR(totalSum);
-      document.getElementById("normalCalcTxCount").textContent = `${rangeSales.length} walk-in transactions from ${startStr} to ${endStr}`;
-      document.getElementById("normalCalcCashSum").textContent = formatINR(cashSum);
-      document.getElementById("normalCalcCashPct").textContent = `${cashPct}% of total`;
-      document.getElementById("normalCalcUpiSum").textContent = formatINR(upiSum);
-      document.getElementById("normalCalcUpiPct").textContent = `${upiPct}% of total`;
-
-      // 4b) 2x2 Special Festival Matrix (Farsan vs Sweet x Direct Cash vs Online UPI)
-      const sourceMode = document.getElementById("specialMatrixSource").value;
-      let records = [];
-      if (sourceMode === "COMBINED") {
-        records = [...state.dailySales, ...state.festivalOrders];
-      } else if (sourceMode === "FESTIVAL_ONLY") {
-        records = [...state.festivalOrders];
+      const remarkBox = document.getElementById('receiptRemarkBox');
+      if (bill.remark) {
+        remarkBox.textContent = 'Note: ' + bill.remark;
+        remarkBox.classList.remove('hidden');
       } else {
-        records = [...state.dailySales];
+        remarkBox.classList.add('hidden');
       }
 
-      let farsanCash = 0, farsanUpi = 0, sweetCash = 0, sweetUpi = 0;
-      records.forEach(r => {
-        const amt = Number(r.amount) || 0;
-        const isFarsan = r.category === "Farsan";
-        const isCash = r.paymentMethod === "DIRECT";
-        if (isFarsan && isCash) farsanCash += amt;
-        if (isFarsan && !isCash) farsanUpi += amt;
-        if (!isFarsan && isCash) sweetCash += amt;
-        if (!isFarsan && !isCash) sweetUpi += amt;
-      });
-
-      const farsanTotal = farsanCash + farsanUpi;
-      const sweetTotal = sweetCash + sweetUpi;
-      const cashGrand = farsanCash + sweetCash;
-      const upiGrand = farsanUpi + sweetUpi;
-      const grandTotal = farsanTotal + sweetTotal;
-
-      document.getElementById("matFarsanCash").textContent = formatINR(farsanCash);
-      document.getElementById("matFarsanUpi").textContent = formatINR(farsanUpi);
-      document.getElementById("matFarsanTotal").textContent = formatINR(farsanTotal);
-
-      document.getElementById("matSweetCash").textContent = formatINR(sweetCash);
-      document.getElementById("matSweetUpi").textContent = formatINR(sweetUpi);
-      document.getElementById("matSweetTotal").textContent = formatINR(sweetTotal);
-
-      document.getElementById("matCashGrand").textContent = formatINR(cashGrand);
-      document.getElementById("matUpiGrand").textContent = formatINR(upiGrand);
-      document.getElementById("matGrandTotal").textContent = formatINR(grandTotal);
-
-      // Update Chart.js 2x2 Visual Breakdown
-      const ctx = document.getElementById("matrixChartCanvas");
-      if (ctx && window.Chart) {
-        if (matrixChartInstance) {
-          matrixChartInstance.data.datasets[0].data = [farsanCash, sweetCash];
-          matrixChartInstance.data.datasets[1].data = [farsanUpi, sweetUpi];
-          matrixChartInstance.update();
-        } else {
-          matrixChartInstance = new Chart(ctx, {
-            type: "bar",
-            data: {
-              labels: ["Farsan Category", "Sweets Category"],
-              datasets: [
-                {
-                  label: "Direct (Cash ₹)",
-                  data: [farsanCash, sweetCash],
-                  backgroundColor: "#D32F2F",
-                  borderRadius: 8
-                },
-                {
-                  label: "Online (UPI ₹)",
-                  data: [farsanUpi, sweetUpi],
-                  backgroundColor: "#F59E0B",
-                  borderRadius: 8
-                }
-              ]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { position: "bottom" }
-              },
-              scales: {
-                y: { beginAtZero: true }
-              }
-            }
-          });
-        }
-      }
+      document.getElementById('receiptGrandTotal').textContent = '₹' + bill.grandTotal.toLocaleString('en-IN');
+      const modal = document.getElementById('billReceiptModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
     }
 
-    // ==========================================================
-    // RENDER 5: NEXT-YEAR CRM & PAST ARCHIVES
-    // ==========================================================
-    function renderCrmTable() {
-      const archiveFilter = document.getElementById("crmArchiveFilter").value;
-      const searchQ = (document.getElementById("crmSearchInput").value || "").toLowerCase();
+    function closeReceiptModal() {
+      const modal = document.getElementById('billReceiptModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
 
-      const filtered = state.crmArchives.filter(c => {
-        const matchFest = archiveFilter === "ALL" || c.festivalYear === archiveFilter;
-        const matchQ = !searchQ || c.customerName.toLowerCase().includes(searchQ) || c.phone.includes(searchQ) || c.orderSummary.toLowerCase().includes(searchQ);
-        return matchFest && matchQ;
-      });
+    function deleteFestivalBill(billId) {
+      if (!isManagerMode) {
+        showToast('Unlock Manager Mode (PIN 2009) in the top-right corner to delete saved bills.', 'amber');
+        openPinModal();
+        return;
+      }
+      festivalNotesBills = festivalNotesBills.filter(b => b.id !== billId);
+      localStorage.setItem('tulsi_festival_notes_v1', JSON.stringify(festivalNotesBills));
+      renderSavedFestivalNotes();
+      renderCrmTable();
+      showToast('Customer festival bill deleted.', 'green');
+    }
 
-      const tbody = document.getElementById("crmTableBody");
-      tbody.innerHTML = filtered.map(c => {
-        const waText = encodeURIComponent(
-          `Namaste ${c.customerName}! Warm festival greetings from Tulsi Farsan. Last year for ${c.festivalYear} you ordered: ${c.orderSummary}. Would you like us to book your fresh advance sweet boxes for this year?`
-        );
-        return `
-          <tr class="hover:bg-amber-50/50">
-            <td class="p-3.5 font-extrabold text-xs text-[#D32F2F]">${c.festivalYear}</td>
-            <td class="p-3.5 font-extrabold text-gray-900">${c.customerName}</td>
-            <td class="p-3.5 font-semibold text-gray-600">${c.phone}</td>
-            <td class="p-3.5 font-bold text-amber-950">${c.orderSummary}</td>
-            <td class="p-3.5 text-right font-extrabold text-gray-900">${formatINR(c.amount)}</td>
-            <td class="p-3.5 text-center">
-              <div class="inline-flex items-center gap-1.5">
-                <a href="https://wa.me/91${c.phone.replace(/\D/g, '')}?text=${waText}" target="_blank" rel="noopener noreferrer" data-action="markCrmContacted" data-id="${c.id}" class="tap-btn px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-sm">
-                  💬 WhatsApp 15-Day Reminder
-                </a>
-                <a href="tel:${c.phone}" class="tap-btn px-2.5 py-1.5 rounded-xl bg-amber-100 text-red-950 font-extrabold text-xs border border-amber-300">
-                  📞 Call
-                </a>
-              </div>
+    /********************************************************************
+     * 4. SIDE QUICK BOX CALCULATOR & BASIC COUNTER CALCULATOR
+     ********************************************************************/
+    function updateQuickBoxTable() {
+      const oneBoxRate = parseFloat(document.getElementById('quickCalcOneBoxRate').value) || 0;
+      const customBoxes = parseFloat(document.getElementById('quickCalcBoxCount').value) || 0;
+      const total = oneBoxRate * customBoxes;
+      document.getElementById('quickCalcResultText').textContent = '₹' + total.toLocaleString('en-IN');
+
+      const presets = [2, 5, 10, 20, 50, 100];
+      const grid = document.getElementById('quickBoxMultipliersGrid');
+      grid.innerHTML = presets
+        .map(
+          count => `
+          <div class="bg-white border border-amber-200 rounded-lg p-1.5">
+            <div class="text-[10px] font-bold text-gray-500">${count} Boxes</div>
+            <div class="text-xs font-extrabold text-gray-900">₹${(oneBoxRate * count).toLocaleString('en-IN')}</div>
+          </div>
+        `
+        )
+        .join('');
+    }
+
+    let calcExpression = '';
+    function calcInput(token) {
+      const screen = document.getElementById('basicCalcScreen');
+      const history = document.getElementById('basicCalcHistory');
+
+      if (token === 'C') {
+        calcExpression = '';
+        screen.textContent = '0';
+        history.textContent = '0';
+        return;
+      }
+      if (token === 'BACK') {
+        calcExpression = calcExpression.slice(0, -1);
+        screen.textContent = calcExpression || '0';
+        return;
+      }
+      if (token === '=') {
+        try {
+          const sanitized = calcExpression.replace(/[^0-9+\-*/.]/g, '');
+          if (!sanitized) return;
+          const result = Function('"use strict";return (' + sanitized + ')')();
+          history.textContent = calcExpression + ' =';
+          calcExpression = String(Number(result.toFixed(2)));
+          screen.textContent = calcExpression;
+        } catch (e) {
+          screen.textContent = 'Error';
+          calcExpression = '';
+        }
+        return;
+      }
+      calcExpression += token;
+      screen.textContent = calcExpression;
+    }
+
+    /********************************************************************
+     * 5. COUNTER POS, RAW SAMAN, WALK-IN LEDGER & MANAGER MENU
+     ********************************************************************/
+    function populatePosAndRawSelects() {
+      const posSelect = document.getElementById('posItemSelect');
+      const rawSelect = document.getElementById('rawItemSelect');
+      if (!posSelect || !rawSelect) return;
+
+      posSelect.innerHTML = shopMenu
+        .map(item => `<option value="${item.id}">${escapeHtml(item.name)} — ₹${item.rate}/kg</option>`)
+        .join('');
+
+      rawSelect.innerHTML = shopMenu
+        .map(item => `<option value="${item.id}">${escapeHtml(item.name)} (${item.category})</option>`)
+        .join('');
+
+      updatePosCalculation();
+      calculateRawSaman();
+    }
+
+    function setPosWeight(kg) {
+      document.getElementById('posWeightKg').value = kg;
+      updatePosCalculation();
+    }
+
+    function updatePosCalculation() {
+      const itemId = document.getElementById('posItemSelect').value;
+      const weight = parseFloat(document.getElementById('posWeightKg').value) || 0;
+      const item = shopMenu.find(i => i.id === itemId);
+      const total = item ? item.rate * weight : 0;
+      document.getElementById('posTotalDisplay').textContent = '₹' + total.toLocaleString('en-IN');
+    }
+
+    function recordWalkInSale() {
+      const itemId = document.getElementById('posItemSelect').value;
+      const item = shopMenu.find(i => i.id === itemId);
+      if (!item) return;
+
+      const weight = parseFloat(document.getElementById('posWeightKg').value) || 0;
+      const customer = document.getElementById('posCustomerName').value.trim() || 'Walk-In Customer';
+      const payment = document.getElementById('posPaymentMode').value;
+      const amount = Math.round(item.rate * weight);
+
+      const sale = {
+        id: 'sale_' + Date.now(),
+        time: new Date().toLocaleString('en-IN'),
+        customer,
+        itemName: item.name,
+        weight,
+        payment,
+        amount
+      };
+
+      walkinSales.unshift(sale);
+      localStorage.setItem('tulsi_walkin_v1', JSON.stringify(walkinSales));
+      renderWalkinLedger();
+      showToast(`Saved Walk-In Sale: ${item.name} (${weight}kg) - ₹${amount}`, 'green');
+    }
+
+    function calculateRawSaman() {
+      const itemId = document.getElementById('rawItemSelect').value;
+      const batchKg = parseFloat(document.getElementById('rawBatchKg').value) || 0;
+      const item = shopMenu.find(i => i.id === itemId) || shopMenu[0];
+      if (!item) return;
+
+      document.getElementById('rawBesanVal').textContent = ((item.besan || 0) * batchKg).toFixed(1) + ' kg';
+      document.getElementById('rawOilVal').textContent = ((item.oil || 0) * batchKg).toFixed(1) + ' L';
+      document.getElementById('rawSugarVal').textContent = ((item.sugar || 0) * batchKg).toFixed(1) + ' kg';
+      document.getElementById('rawMawaVal').textContent = ((item.mawa || 0) * batchKg).toFixed(1) + ' kg';
+    }
+
+    function renderWalkinLedger() {
+      const tbody = document.getElementById('walkinLedgerTableBody');
+      let totalRev = 0;
+      walkinSales.forEach(s => (totalRev += s.amount));
+      document.getElementById('walkinTotalRevenueBadge').textContent = 'Total Walk-In Revenue: ₹' + totalRev.toLocaleString('en-IN');
+
+      if (walkinSales.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-gray-400">No walk-in sales logged yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = walkinSales
+        .map(
+          s => `
+          <tr class="hover:bg-amber-50/40">
+            <td class="py-2.5 px-3 text-xs text-gray-500">${escapeHtml(s.time)}</td>
+            <td class="py-2.5 px-3 font-bold">${escapeHtml(s.customer)}</td>
+            <td class="py-2.5 px-3">${escapeHtml(s.itemName)}</td>
+            <td class="py-2.5 px-3">${s.weight} kg</td>
+            <td class="py-2.5 px-3"><span class="text-xs bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">${escapeHtml(s.payment)}</span></td>
+            <td class="py-2.5 px-3 font-extrabold text-tulsiRed">₹${s.amount.toLocaleString('en-IN')}</td>
+            <td class="py-2.5 px-3 text-right">
+              <button onclick="deleteWalkinSale('${s.id}')" class="text-red-600 hover:text-red-800 text-xs font-bold">
+                <i class="fa-solid fa-trash"></i>
+              </button>
             </td>
           </tr>
-        `;
-      }).join("");
+        `
+        )
+        .join('');
     }
 
-    // ==========================================================
-    // RENDER 6: ADMIN MENU & RATES TABLE
-    // ==========================================================
-    function renderAdminTable() {
-      const tbody = document.getElementById("adminMenuTableBody");
-      tbody.innerHTML = state.menu.map(item => `
-        <tr>
-          <td class="p-3 font-extrabold text-gray-900">${item.name}</td>
-          <td class="p-3"><span class="px-2 py-0.5 rounded text-xs ${item.category === 'Farsan' ? 'bg-red-100 text-red-900' : 'bg-amber-100 text-amber-900'}">${item.category}</span></td>
-          <td class="p-3 text-[#D32F2F]">₹${item.pricePerKg}/kg</td>
-          <td class="p-3">${item.baseFestivalKg} kg</td>
-          <td class="p-3 text-right">
-            <button data-action="deleteMenuItem" data-id="${item.id}" class="text-xs font-extrabold text-red-600 hover:underline">Remove</button>
-          </td>
-        </tr>
-      `).join("");
-    }
-
-    function renderAll() {
-      renderDashboard();
-      renderLiveLedger();
-      renderFestivalSection();
-      renderCalculators();
-      renderCrmTable();
-      renderAdminTable();
-    }
-
-    // ==========================================================
-    // TAB NAVIGATION & EVENT LISTENERS
-    // ==========================================================
-    function switchTab(tabId) {
-      if (tabId === "admin" && !state.isManager) {
-        document.getElementById("pinModal").classList.remove("hidden");
-        document.getElementById("pinModal").classList.add("flex");
+    function deleteWalkinSale(saleId) {
+      if (!isManagerMode) {
+        showToast('Enter Manager PIN 2009 to delete walk-in ledger entries.', 'amber');
+        openPinModal();
         return;
       }
-      state.activeTab = tabId;
-      document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
-      const target = document.getElementById(`tab-${tabId}`);
-      if (target) target.classList.remove("hidden");
+      walkinSales = walkinSales.filter(s => s.id !== saleId);
+      localStorage.setItem('tulsi_walkin_v1', JSON.stringify(walkinSales));
+      renderWalkinLedger();
+      showToast('Walk-in entry deleted.', 'green');
+    }
 
-      // Update active styling on desktop & mobile nav buttons
-      document.querySelectorAll(".nav-tab-btn").forEach(btn => {
-        const isCurrent = btn.dataset.tab === tabId;
-        if (btn.parentElement.classList.contains("grid")) {
-          // Mobile nav
-          btn.className = `nav-tab-btn py-2.5 flex flex-col items-center justify-center text-[11px] font-bold ${isCurrent ? 'text-amber-300 bg-red-900/60' : 'text-red-200'}`;
-        } else {
-          // Desktop nav
-          if (btn.id === "desktopAdminTab" && !state.isManager) return;
-          btn.className = isCurrent
-            ? "nav-tab-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition bg-amber-400 text-red-950 shadow"
-            : "nav-tab-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition text-amber-100 hover:bg-red-800";
-        }
+    function renderCrmTable() {
+      const tbody = document.getElementById('crmTableBody');
+      document.getElementById('crmCountBadge').textContent = `${festivalNotesBills.length} Customers`;
+
+      if (festivalNotesBills.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-gray-400">Save a Festival Note Bill to populate CRM 2026.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = festivalNotesBills
+        .map(
+          b => `
+          <tr class="hover:bg-amber-50/40">
+            <td class="py-2.5 px-3 font-bold text-gray-900">${escapeHtml(b.customerName)}</td>
+            <td class="py-2.5 px-3 font-mono text-xs">+91 ${escapeHtml(b.contactNo)}</td>
+            <td class="py-2.5 px-3"><span class="bg-red-100 text-tulsiRed text-xs font-bold px-2 py-0.5 rounded-full">${escapeHtml(b.festival)}</span></td>
+            <td class="py-2.5 px-3 text-xs">${escapeHtml(b.lines.map(l => l.sweetType).join(', '))}</td>
+            <td class="py-2.5 px-3 font-bold">${b.totalBoxes}</td>
+            <td class="py-2.5 px-3 font-extrabold text-tulsiRed">₹${b.grandTotal.toLocaleString('en-IN')}</td>
+          </tr>
+        `
+        )
+        .join('');
+    }
+
+    function renderMenuEditor() {
+      const grid = document.getElementById('menuItemsGrid');
+      grid.innerHTML = shopMenu
+        .map(
+          item => `
+          <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/30 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-amber-200 text-amber-950">${escapeHtml(item.category)}</span>
+              <h4 class="font-bold text-gray-900 mt-1">${escapeHtml(item.name)}</h4>
+              <p class="text-sm font-extrabold text-tulsiRed">₹${item.rate} / kg</p>
+            </div>
+            ${isManagerMode ? `
+              <button onclick="deleteMenuItem('${item.id}')" class="text-red-600 hover:text-red-800 p-2">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            ` : ''}
+          </div>
+        `
+        )
+        .join('');
+    }
+
+    function saveMenuItem() {
+      if (!isManagerMode) {
+        showToast('Unlock Manager Mode with PIN 2009 first.', 'amber');
+        openPinModal();
+        return;
+      }
+      const name = document.getElementById('menuItemName').value.trim();
+      const category = document.getElementById('menuItemCategory').value;
+      const rate = parseFloat(document.getElementById('menuItemRate').value) || 0;
+      if (!name || rate <= 0) {
+        showToast('Enter valid item name and rate per kg.', 'red');
+        return;
+      }
+
+      shopMenu.push({
+        id: 'm_' + Date.now(),
+        name,
+        category,
+        rate,
+        besan: 0.5,
+        oil: 0.35,
+        sugar: 0.3,
+        mawa: 0.2
       });
+      localStorage.setItem('tulsi_menu_v1', JSON.stringify(shopMenu));
+      populatePosAndRawSelects();
+      renderMenuEditor();
+      document.getElementById('menuItemName').value = '';
+      document.getElementById('menuItemRate').value = '';
+      showToast(`Added "${name}" (₹${rate}/kg) to shop menu.`, 'green');
+    }
 
-      if (tabId === "analytics") {
-        setTimeout(() => renderCalculators(), 60);
+    function deleteMenuItem(id) {
+      shopMenu = shopMenu.filter(m => m.id !== id);
+      localStorage.setItem('tulsi_menu_v1', JSON.stringify(shopMenu));
+      populatePosAndRawSelects();
+      renderMenuEditor();
+    }
+
+    /********************************************************************
+     * 6. MANAGER MODE PIN (2009) & TAB NAVIGATION
+     ********************************************************************/
+    function switchTab(tabKey) {
+      document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
+      document.getElementById('tab-' + tabKey).classList.remove('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.className = 'tab-btn whitespace-nowrap px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 text-red-100 hover:bg-red-800/60';
+      });
+      const activeBtn = document.getElementById('tabBtn-' + tabKey);
+      if (activeBtn) {
+        activeBtn.className = 'tab-btn whitespace-nowrap px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 bg-amber-400 text-red-950 shadow';
       }
     }
 
-    // Initialize Date Defaults & Event Listeners
-    window.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("pickupDateFilter").value = TODAY_STR;
-      document.getElementById("dailyDateInput").value = TODAY_STR;
-      document.getElementById("festPickupDate").value = TODAY_STR;
-      document.getElementById("calcStartDate").value = "2026-11-01";
-      document.getElementById("calcEndDate").value = TODAY_STR;
+    function handleModeToggle() {
+      if (isManagerMode) {
+        isManagerMode = false;
+        updateManagerModeUI();
+        showToast('Switched back to Counter Mode (Entry-Only).', 'amber');
+      } else {
+        openPinModal();
+      }
+    }
 
-      populateItemDropdowns();
-      renderAll();
+    function openPinModal() {
+      const modal = document.getElementById('pinModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.getElementById('managerPinInput').value = '';
+      document.getElementById('managerPinInput').focus();
+    }
 
-      // Navigation Tabs
-      document.querySelectorAll(".nav-tab-btn").forEach(btn => {
-        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-      });
+    function closePinModal() {
+      const modal = document.getElementById('pinModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
 
-      // Quick Action Buttons on Home Page
-      document.getElementById("quickBtnDailySale").addEventListener("click", () => switchTab("daily"));
-      document.getElementById("quickBtnFestivalOrder").addEventListener("click", () => switchTab("festivals"));
-      document.getElementById("btnViewAllPickups").addEventListener("click", () => switchTab("festivals"));
+    function verifyManagerPin() {
+      const pin = document.getElementById('managerPinInput').value.trim();
+      if (pin === '2009') {
+        isManagerMode = true;
+        closePinModal();
+        updateManagerModeUI();
+        showToast('Manager Mode Unlocked (PIN 2009 Verified)!', 'green');
+      } else {
+        showToast('Incorrect Manager PIN! Default PIN is 2009.', 'red');
+      }
+    }
 
-      // Dashboard Filters
-      document.getElementById("samanFestivalFilter").addEventListener("change", renderDashboard);
-      document.getElementById("pickupDateFilter").addEventListener("change", renderDashboard);
+    function updateManagerModeUI() {
+      const label = document.getElementById('modeLabel');
+      const icon = document.getElementById('modeIcon');
+      const banner = document.getElementById('managerStatusBanner');
 
-      // Daily Sale Form Interactions
-      document.getElementById("dailyItemSelect").addEventListener("change", updateDailyCalculatedPrice);
-      document.getElementById("dailyQtyInput").addEventListener("input", updateDailyCalculatedPrice);
+      if (isManagerMode) {
+        label.textContent = 'Manager Mode (Unlocked)';
+        icon.className = 'fa-solid fa-unlock text-green-300';
+        banner.textContent = 'Unlocked (Manager Mode Active)';
+        banner.className = 'text-xs font-extrabold px-3 py-1.5 rounded-full bg-green-100 text-green-800';
+      } else {
+        label.textContent = 'Counter Mode';
+        icon.className = 'fa-solid fa-lock text-amber-300';
+        banner.textContent = 'Locked (Enter PIN 2009 in top-right)';
+        banner.className = 'text-xs font-extrabold px-3 py-1.5 rounded-full bg-red-100 text-red-800';
+      }
+      renderMenuEditor();
+    }
 
-      document.querySelectorAll(".qty-preset-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          document.getElementById("dailyQtyInput").value = btn.dataset.qty;
-          document.querySelectorAll(".qty-preset-btn").forEach(b => {
-            b.className = "qty-preset-btn tap-btn py-2.5 rounded-xl border-2 border-gray-200 font-extrabold text-sm hover:border-[#D32F2F]";
-          });
-          btn.className = "qty-preset-btn tap-btn py-2.5 rounded-xl border-2 border-[#D32F2F] bg-red-50 text-[#D32F2F] font-extrabold text-sm";
-          updateDailyCalculatedPrice();
-        });
-      });
+    /********************************************************************
+     * 7. FIREBASE CLOUD FIRESTORE REST SYNC
+     ********************************************************************/
+    function openFirebaseModal() {
+      const modal = document.getElementById('firebaseModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
 
-      // Payment Toggle (Direct Cash vs Online UPI)
-      document.querySelectorAll(".pay-method-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          state.dailyPayMethod = btn.dataset.pay;
-          const isCash = state.dailyPayMethod === "DIRECT";
-          document.getElementById("payToggleCash").className = isCash
-            ? "pay-method-btn tap-btn py-3.5 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 bg-[#D32F2F] text-white shadow"
-            : "pay-method-btn tap-btn py-3.5 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 text-gray-700 hover:bg-white";
-          document.getElementById("payToggleUpi").className = !isCash
-            ? "pay-method-btn tap-btn py-3.5 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 bg-[#D32F2F] text-white shadow"
-            : "pay-method-btn tap-btn py-3.5 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 text-gray-700 hover:bg-white";
-        });
-      });
+    function closeFirebaseModal() {
+      const modal = document.getElementById('firebaseModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
 
-      // Submit Daily Walk-In Sale
-      document.getElementById("dailySaleForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const itemName = document.getElementById("dailyItemSelect").value;
-        const itemObj = state.menu.find(m => m.name === itemName) || state.menu[0];
-        const qtyKg = parseFloat(document.getElementById("dailyQtyInput").value) || 1;
-        const amount = parseFloat(document.getElementById("dailyAmountInput").value) || 0;
-        const date = document.getElementById("dailyDateInput").value || TODAY_STR;
-        const nowTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    function connectFirebaseCloud() {
+      const projectId = document.getElementById('fbProjectIdInput').value.trim();
+      const apiKey = document.getElementById('fbApiKeyInput').value.trim();
+      if (!projectId || !apiKey) {
+        showToast('Please enter both Project ID and Web API Key.', 'red');
+        return;
+      }
+      fbConfig = { projectId, apiKey, connected: true };
+      localStorage.setItem('tulsi_fb_config', JSON.stringify(fbConfig));
+      setSyncBadge(true);
+      closeFirebaseModal();
+      showToast('Live Firebase Cloud Connected!', 'green');
+    }
 
-        const newTx = {
-          id: "ds_" + Date.now(),
-          itemName,
-          category: itemObj.category,
-          qtyKg,
-          amount,
-          paymentMethod: state.dailyPayMethod,
-          date,
-          time: nowTime
-        };
+    function setSyncBadge(isLive) {
+      const dot = document.getElementById('syncDot');
+      const text = document.getElementById('syncText');
+      if (isLive) {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-green-400';
+        text.textContent = 'Live Firebase Synced';
+      } else {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400';
+        text.textContent = 'Local Storage Mode';
+      }
+    }
 
-        state.dailySales.unshift(newTx);
-        syncDocToFirebase("dailySales", newTx);
-        renderAll();
-        showToast(`Saved Sale: ${itemName} (${qtyKg}kg) — ${formatINR(amount)} [${state.dailyPayMethod}]`);
-      });
-
-      // Live Ledger Filters
-      document.getElementById("ledgerFilterCategory").addEventListener("change", renderLiveLedger);
-      document.getElementById("ledgerFilterPayment").addEventListener("change", renderLiveLedger);
-
-      // Festival Selector Cards
-      document.querySelectorAll(".festival-card-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          state.activeFestival = btn.dataset.festival;
-          renderFestivalSection();
-        });
-      });
-
-      // Festival Price Auto-Calculation
-      document.getElementById("festItemSelect").addEventListener("change", updateFestivalCalculatedPrice);
-      document.getElementById("festBoxSize").addEventListener("change", updateFestivalCalculatedPrice);
-      document.getElementById("festBoxCount").addEventListener("input", updateFestivalCalculatedPrice);
-
-      // Submit Festival Advance Order
-      document.getElementById("festivalOrderForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const customerName = document.getElementById("festCustName").value.trim();
-        const phone = document.getElementById("festCustPhone").value.trim();
-        const itemName = document.getElementById("festItemSelect").value;
-        const itemObj = state.menu.find(m => m.name === itemName) || state.menu[0];
-        const boxSizeKg = parseFloat(document.getElementById("festBoxSize").value) || 1;
-        const boxes = parseInt(document.getElementById("festBoxCount").value, 10) || 1;
-        const totalKg = +(boxSizeKg * boxes).toFixed(2);
-        const amount = parseFloat(document.getElementById("festTotalAmount").value) || 0;
-        const pickupDate = document.getElementById("festPickupDate").value || TODAY_STR;
-        const paymentStatus = document.getElementById("festPayStatus").value;
-        const paymentMethod = document.getElementById("festPayMode").value;
-
-        const newOrder = {
-          id: "fo_" + Date.now(),
-          festival: state.activeFestival,
-          customerName,
-          phone,
-          itemName,
-          category: itemObj.category,
-          boxSizeKg,
-          boxes,
-          totalKg,
-          amount,
-          pickupDate,
-          paymentStatus,
-          paymentMethod,
-          delivered: false
-        };
-
-        state.festivalOrders.unshift(newOrder);
-        state.crmArchives.unshift({
-          id: "crm_" + Date.now(),
-          festivalYear: state.activeFestival + " 2026",
-          customerName,
-          phone,
-          orderSummary: `${boxes} Boxes × ${boxSizeKg}kg ${itemName} (${totalKg}kg)`,
-          amount,
-          contacted2026: false
-        });
-        syncDocToFirebase("festivalOrders", newOrder);
-        e.target.reset();
-        document.getElementById("festPickupDate").value = pickupDate;
-        updateFestivalCalculatedPrice();
-        renderAll();
-        showToast(`Booked ${state.activeFestival} Order for ${customerName} (${totalKg}kg ${itemName})`);
-      });
-
-      // Calculator Date Inputs & Presets
-      document.getElementById("calcStartDate").addEventListener("change", renderCalculators);
-      document.getElementById("calcEndDate").addEventListener("change", renderCalculators);
-      document.getElementById("specialMatrixSource").addEventListener("change", renderCalculators);
-
-      document.querySelectorAll(".range-preset-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const range = btn.dataset.range;
-          if (range === "today") {
-            document.getElementById("calcStartDate").value = TODAY_STR;
-            document.getElementById("calcEndDate").value = TODAY_STR;
-          } else if (range === "7days") {
-            document.getElementById("calcStartDate").value = "2026-11-05";
-            document.getElementById("calcEndDate").value = TODAY_STR;
-          } else if (range === "30days") {
-            document.getElementById("calcStartDate").value = "2026-10-13";
-            document.getElementById("calcEndDate").value = TODAY_STR;
-          } else {
-            document.getElementById("calcStartDate").value = "2026-01-01";
-            document.getElementById("calcEndDate").value = "2026-12-31";
-          }
-          renderCalculators();
-        });
-      });
-
-      // CRM Filters
-      document.getElementById("crmArchiveFilter").addEventListener("change", renderCrmTable);
-      document.getElementById("crmSearchInput").addEventListener("input", renderCrmTable);
-
-      // Role Toggle / Manager PIN Modal
-      document.getElementById("btnRoleToggle").addEventListener("click", () => {
-        if (state.isManager) {
-          state.isManager = false;
-          document.getElementById("roleLabel").textContent = "Counter Mode";
-          document.getElementById("desktopAdminTab").classList.add("hidden");
-          if (state.activeTab === "admin") switchTab("dashboard");
-          showToast("Switched to Counter Staff Mode (Entry-Only).");
-        } else {
-          document.getElementById("pinModal").classList.remove("hidden");
-          document.getElementById("pinModal").classList.add("flex");
-          document.getElementById("pinInput").value = "";
-          document.getElementById("pinErrorMsg").classList.add("hidden");
-        }
-      });
-
-      document.getElementById("closePinModal").addEventListener("click", () => {
-        document.getElementById("pinModal").classList.add("hidden");
-        document.getElementById("pinModal").classList.remove("flex");
-      });
-
-      document.getElementById("pinForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const pin = document.getElementById("pinInput").value.trim();
-        if (pin === "2009") {
-          state.isManager = true;
-          document.getElementById("roleLabel").textContent = "★ Manager Unlocked";
-          document.getElementById("desktopAdminTab").classList.remove("hidden");
-          document.getElementById("pinModal").classList.add("hidden");
-          document.getElementById("pinModal").classList.remove("flex");
-          switchTab("admin");
-          showToast("Manager Mode Unlocked! You can now edit menu rates and past records.");
-        } else {
-          document.getElementById("pinErrorMsg").classList.remove("hidden");
-        }
-      });
-
-      // Admin Add/Update Menu Item
-      document.getElementById("adminMenuForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const name = document.getElementById("adminItemName").value.trim();
-        const category = document.getElementById("adminItemCategory").value;
-        const pricePerKg = parseFloat(document.getElementById("adminItemPrice").value) || 300;
-        const baseFestivalKg = parseFloat(document.getElementById("adminItemTargetKg").value) || 50;
-
-        const existing = state.menu.find(m => m.name.toLowerCase() === name.toLowerCase());
-        if (existing) {
-          existing.category = category;
-          existing.pricePerKg = pricePerKg;
-          existing.baseFestivalKg = baseFestivalKg;
-          showToast(`Updated rate for ${name} to ₹${pricePerKg}/kg`);
-        } else {
-          state.menu.push({
-            id: "item_" + Date.now(),
-            name,
-            category,
-            pricePerKg,
-            baseFestivalKg,
-            recipe: { besan: 0.4, oil: 0.25, sugar: 0.25, mawa: 0.1 }
-          });
-          showToast(`Added ${name} (₹${pricePerKg}/kg) to Tulsi Farsan Menu`);
-        }
-        e.target.reset();
-        populateItemDropdowns();
-        renderAll();
-      });
-
-      // Firebase Setup Modal
-      document.getElementById("btnFirebaseSetup").addEventListener("click", () => {
-        document.getElementById("firebaseModal").classList.remove("hidden");
-        document.getElementById("firebaseModal").classList.add("flex");
-      });
-      document.getElementById("closeFirebaseModal").addEventListener("click", () => {
-        document.getElementById("firebaseModal").classList.add("hidden");
-        document.getElementById("firebaseModal").classList.remove("flex");
-      });
-      document.getElementById("btnConnectFirebase").addEventListener("click", () => {
-        const raw = document.getElementById("firebaseConfigInput").value.trim();
-        const projId = document.getElementById("fbProjectId").value.trim();
-        const apiKey = document.getElementById("fbApiKey").value.trim();
-        const appId = document.getElementById("fbAppId").value.trim();
-
-        let configObj = null;
-        if (raw) {
-          try {
-            configObj = JSON.parse(raw);
-          } catch (err) {
-            showToast("Invalid JSON format in textarea. Check quotes and commas.", "error");
-            return;
-          }
-        } else if (projId && apiKey) {
-          configObj = {
-            apiKey: apiKey,
-            authDomain: `${projId}.firebaseapp.com`,
-            projectId: projId,
-            storageBucket: `${projId}.appspot.com`,
-            appId: appId || "1:000000000:web:tulsifarsan"
-          };
-          document.getElementById("firebaseConfigInput").value = JSON.stringify(configObj, null, 2);
-        } else {
-          showToast("Enter your Project ID & API Key, or paste the Firebase JSON.", "error");
-          return;
-        }
-
-        try {
-          localStorage.setItem("tulsi_farsan_fb_config", JSON.stringify(configObj));
-        } catch (e) {}
-
-        connectFirebase(configObj);
-        document.getElementById("firebaseModal").classList.add("hidden");
-        document.getElementById("firebaseModal").classList.remove("flex");
-      });
-
-      document.getElementById("btnSeedFirebase").addEventListener("click", async () => {
-        if (!state.firebaseConnected || !state.db) {
-          showToast("Connect your Firebase credentials first, then click Push to Cloud.", "error");
-          return;
-        }
-        for (const item of state.menu) await syncDocToFirebase("menu", item);
-        for (const sale of state.dailySales) await syncDocToFirebase("dailySales", sale);
-        for (const order of state.festivalOrders) await syncDocToFirebase("festivalOrders", order);
-        for (const crm of state.crmArchives) await syncDocToFirebase("crmArchives", crm);
-        showToast("All Menu Items, Sales, Festival Orders & 2026 CRM synced to Firestore!");
-      });
-
-      // Auto-load saved Firebase Config if present
+    async function syncDocumentToFirestore(collectionName, docId, payloadObj) {
+      if (!fbConfig.projectId || !fbConfig.apiKey) return;
       try {
-        const savedFb = localStorage.getItem("tulsi_farsan_fb_config");
-        if (savedFb) {
-          const parsed = JSON.parse(savedFb);
-          document.getElementById("firebaseConfigInput").value = JSON.stringify(parsed, null, 2);
-          if (parsed.projectId) document.getElementById("fbProjectId").value = parsed.projectId;
-          if (parsed.apiKey) document.getElementById("fbApiKey").value = parsed.apiKey;
-          connectFirebase(parsed);
-        }
-      } catch (e) {}
-      document.getElementById("btnCopyRules").addEventListener("click", () => {
-        const rulesText = document.getElementById("firestoreRulesCode").textContent;
-        const ta = document.createElement("textarea");
-        ta.value = rulesText;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        ta.remove();
-        showToast("Firestore security rules copied to clipboard!");
-      });
+        const url = `https://firestore.googleapis.com/v1/projects/${fbConfig.projectId}/databases/(default)/documents/shops/tulsi_farsan/${collectionName}/${docId}?key=${fbConfig.apiKey}`;
+        await fetch(url, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fields: {
+              jsonPayload: { stringValue: JSON.stringify(payloadObj) }
+            }
+          })
+        });
+      } catch (e) {
+        console.warn('Firestore sync fallback to localStorage:', e);
+      }
+    }
 
-      // Global Delegated Actions (Pickups, Deletions, Admin Actions)
-      document.body.addEventListener("click", (e) => {
-        const btn = e.target.closest("[data-action]");
-        if (!btn) return;
-        const action = btn.dataset.action;
-        const id = btn.dataset.id;
-
-        if (action === "toggleDelivered") {
-          const order = state.festivalOrders.find(o => o.id === id);
-          if (order) {
-            order.delivered = !order.delivered;
-            syncDocToFirebase("festivalOrders", order);
-            renderAll();
-            showToast(order.delivered ? `Marked ${order.customerName}'s order Picked Up!` : `Re-opened pickup for ${order.customerName}`);
+    async function fetchCloudCollection(collectionName) {
+      if (!fbConfig.projectId || !fbConfig.apiKey) return;
+      try {
+        const url = `https://firestore.googleapis.com/v1/projects/${fbConfig.projectId}/databases/(default)/documents/shops/tulsi_farsan/${collectionName}?key=${fbConfig.apiKey}`;
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.documents && data.documents.length > 0) {
+          const parsed = data.documents
+            .map(doc => {
+              const raw = doc.fields && doc.fields.jsonPayload && doc.fields.jsonPayload.stringValue;
+              return raw ? JSON.parse(raw) : null;
+            })
+            .filter(Boolean);
+          if (collectionName === 'festival_notes' && parsed.length > 0) {
+            festivalNotesBills = parsed;
+            localStorage.setItem('tulsi_festival_notes_v1', JSON.stringify(festivalNotesBills));
+            renderSavedFestivalNotes();
+            renderCrmTable();
           }
-        } else if (action === "markPaid") {
-          const order = state.festivalOrders.find(o => o.id === id);
-          if (order) {
-            order.paymentStatus = "Advance Paid";
-            syncDocToFirebase("festivalOrders", order);
-            renderAll();
-            showToast(`Collected ${formatINR(order.amount)} from ${order.customerName}!`);
-          }
-        } else if (action === "deleteDailyTx") {
-          if (!state.isManager) {
-            showToast("Manager PIN (2009) required to delete past ledger entries.", "error");
-            document.getElementById("pinModal").classList.remove("hidden");
-            document.getElementById("pinModal").classList.add("flex");
-            return;
-          }
-          state.dailySales = state.dailySales.filter(t => t.id !== id);
-          deleteDocFromFirebase("dailySales", id);
-          renderAll();
-          showToast("Ledger transaction deleted by Manager.");
-        } else if (action === "deleteFestOrder") {
-          if (!state.isManager) {
-            showToast("Manager PIN (2009) required to delete festival advance orders.", "error");
-            document.getElementById("pinModal").classList.remove("hidden");
-            document.getElementById("pinModal").classList.add("flex");
-            return;
-          }
-          state.festivalOrders = state.festivalOrders.filter(o => o.id !== id);
-          deleteDocFromFirebase("festivalOrders", id);
-          renderAll();
-          showToast("Festival order removed.");
-        } else if (action === "deleteMenuItem") {
-          if (state.menu.length <= 2) {
-            showToast("Keep at least 2 items in the shop menu.", "error");
-            return;
-          }
-          state.menu = state.menu.filter(m => m.id !== id);
-          populateItemDropdowns();
-          renderAll();
-          showToast("Menu item removed.");
         }
-      });
-    });
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").catch(() => {});
-      });
+      } catch (e) {
+        console.warn('Cloud fetch skipped:', e);
+      }
+    }
+
+    async function pushInitialDataToCloud() {
+      if (!fbConfig.projectId || !fbConfig.apiKey) {
+        showToast('Save your Project ID and API Key first.', 'amber');
+        return;
+      }
+      for (const bill of festivalNotesBills) {
+        await syncDocumentToFirestore('festival_notes', bill.id, bill);
+      }
+      showToast('Shop Menu, Festival Notes & CRM pushed to Firebase Cloud!', 'green');
+    }
+
+    function copyFirestoreRules() {
+      const rules = document.getElementById('firestoreRulesText').textContent;
+      const temp = document.createElement('textarea');
+      temp.value = rules;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+      showToast('Firestore Security Rules copied to clipboard!', 'green');
+    }
+
+    /********************************************************************
+     * 8. UTILITIES (TOAST NOTIFICATIONS & HTML ESCAPE)
+     ********************************************************************/
+    function showToast(message, color = 'green') {
+      const container = document.getElementById('toastContainer');
+      const bgMap = {
+        green: 'bg-green-800 border-green-400 text-white',
+        red: 'bg-red-800 border-red-300 text-white',
+        amber: 'bg-amber-500 border-amber-900 text-red-950'
+      };
+      const toast = document.createElement('div');
+      toast.className = `${bgMap[color] || bgMap.green} border-2 px-4 py-3 rounded-xl shadow-xl font-bold text-xs flex items-center justify-between gap-3 pointer-events-auto transition-all`;
+      toast.innerHTML = `<span>${escapeHtml(message)}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 3600);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
     }
   </script>
 </body>
