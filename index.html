@@ -1,245 +1,244 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Tulsi Farsan & Sweets - Shop Diary</title>
-<link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#9E1B1B" />
-<style>
-  :root {
-    --crimson: #9E1B1B;
-    --crimson-dark: #7A1212;
-    --gold: #D4AF37;
-    --gold-light: #F3E5AB;
-    --cream: #FAF6EE;
-    --card: #FFFFFF;
-    --text: #2C1810;
-    --muted: #6E5A4F;
-    --green: #1E7E34;
-    --blue: #0056B3;
-    --border: #E6D7C3;
-  }
-  * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-  body { margin: 0; background: var(--cream); color: var(--text); padding-bottom: 85px; }
-  
-  /* Top Header */
-  header {
-    background: linear-gradient(135deg, var(--crimson-dark), var(--crimson));
-    color: #fff;
-    padding: 12px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 3px solid var(--gold);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  }
-  .brand { display: flex; align-items: center; gap: 10px; }
-  .logo-badge {
-    width: 40px; height: 40px; border-radius: 50%;
-    background: var(--gold); color: var(--crimson-dark);
-    font-weight: 900; font-size: 18px;
-    display: flex; align-items: center; justify-content: center;
-    border: 2px solid #fff;
-  }
-  .brand-text h1 { margin: 0; font-size: 18px; letter-spacing: 0.5px; color: var(--gold-light); }
-  .brand-text p { margin: 0; font-size: 11px; opacity: 0.9; }
-  .header-actions { display: flex; gap: 8px; align-items: center; }
-  .sync-badge {
-    font-size: 11px; padding: 4px 8px; border-radius: 20px;
-    background: rgba(255,255,255,0.15); color: #fff; cursor: pointer;
-    border: 1px solid rgba(255,255,255,0.3);
-  }
-  .sync-badge.live { background: #1E7E34; border-color: #85e09b; }
-  .pin-btn {
-    background: var(--gold); color: var(--crimson-dark);
-    border: none; padding: 6px 10px; border-radius: 8px;
-    font-weight: 700; font-size: 12px; cursor: pointer;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Tulsi Farsan & Sweets — Shop Diary</title>
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#9E1B1B" />
+  <link rel="icon" type="image/png" href="./logo.png" />
+  <link rel="apple-touch-icon" href="./logo.png" />
+  <style>
+    :root {
+      --crimson: #9E1B1B;
+      --crimson-dark: #7A1212;
+      --gold: #D4AF37;
+      --gold-light: #F3E5AB;
+      --cream: #FAF6EE;
+      --card: #FFFFFF;
+      --text: #2C1810;
+      --muted: #6E5A4F;
+      --green: #1E7E34;
+      --blue: #0056B3;
+      --border: #E6D7C3;
+    }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { margin: 0; background: var(--cream); color: var(--text); padding-bottom: 85px; }
+    
+    /* Top Header */
+    header {
+      background: linear-gradient(135deg, var(--crimson-dark), var(--crimson));
+      color: #fff;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid var(--gold);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-logo {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 2px solid var(--gold); object-fit: cover; background: #fff;
+    }
+    .brand-text h1 { margin: 0; font-size: 18px; letter-spacing: 0.5px; color: var(--gold-light); }
+    .brand-text p { margin: 0; font-size: 11px; opacity: 0.9; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .sync-badge {
+      font-size: 11px; padding: 4px 8px; border-radius: 20px;
+      background: rgba(255,255,255,0.15); color: #fff; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    .sync-badge.live { background: #1E7E34; border-color: #85e09b; }
+    .pin-btn {
+      background: var(--gold); color: var(--crimson-dark);
+      border: none; padding: 6px 10px; border-radius: 8px;
+      font-weight: 700; font-size: 12px; cursor: pointer;
+    }
 
-  /* Main Container */
-  .container { max-width: 680px; margin: 0 auto; padding: 14px; }
-  .tab-screen { display: none; }
-  .tab-screen.active { display: block; animation: fadeIn 0.2s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    /* Main Container */
+    .container { max-width: 680px; margin: 0 auto; padding: 14px; }
+    .tab-screen { display: none; }
+    .tab-screen.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* Cards & Common UI */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 14px;
-    box-shadow: 0 3px 8px rgba(44,24,16,0.05);
-  }
-  .card-title {
-    margin: 0 0 12px 0;
-    font-size: 16px;
-    color: var(--crimson);
-    border-bottom: 1px dashed var(--border);
-    padding-bottom: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
-  input, select, textarea {
-    width: 100%; padding: 10px 12px; border: 1.5px solid var(--border);
-    border-radius: 10px; font-size: 15px; background: #fff; color: var(--text);
-    margin-bottom: 10px;
-  }
-  input:focus, select:focus { outline: none; border-color: var(--crimson); }
-  .row { display: flex; gap: 10px; }
-  .col { flex: 1; }
+    /* Cards & Common UI */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 3px 8px rgba(44,24,16,0.05);
+    }
+    .card-title {
+      margin: 0 0 12px 0;
+      font-size: 16px;
+      color: var(--crimson);
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+    input, select, textarea {
+      width: 100%; padding: 10px 12px; border: 1.5px solid var(--border);
+      border-radius: 10px; font-size: 15px; background: #fff; color: var(--text);
+      margin-bottom: 10px;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--crimson); }
+    .row { display: flex; gap: 10px; }
+    .col { flex: 1; }
 
-  /* Chips */
-  .chip-group { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-  .chip {
-    background: var(--cream); border: 1px solid var(--border);
-    padding: 6px 11px; border-radius: 20px; font-size: 13px;
-    font-weight: 600; cursor: pointer; color: var(--text);
-  }
-  .chip:active, .chip.active { background: var(--crimson); color: #fff; border-color: var(--crimson); }
+    /* Chips */
+    .chip-group { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .chip {
+      background: var(--cream); border: 1px solid var(--border);
+      padding: 6px 11px; border-radius: 20px; font-size: 13px;
+      font-weight: 600; cursor: pointer; color: var(--text);
+    }
+    .chip:active, .chip.active { background: var(--crimson); color: #fff; border-color: var(--crimson); }
 
-  /* Tab 1: Fast Bill Calculator */
-  .calc-display {
-    background: #FFFDF9; border: 2px solid var(--gold);
-    border-radius: 12px; padding: 12px 16px; text-align: right;
-    margin-bottom: 12px;
-  }
-  .calc-expr { font-size: 14px; color: var(--muted); min-height: 20px; }
-  .calc-total { font-size: 36px; font-weight: 900; color: var(--crimson); }
-  .numpad {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px;
-  }
-  .num-btn {
-    padding: 15px 0; font-size: 20px; font-weight: 700;
-    border-radius: 10px; border: 1px solid var(--border);
-    background: #fff; cursor: pointer; color: var(--text);
-  }
-  .num-btn.op { background: var(--gold-light); color: var(--crimson-dark); }
-  .num-btn:active { transform: scale(0.97); background: #f0e6d2; }
-  .pay-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .btn-cash {
-    background: var(--green); color: #fff; border: none; padding: 15px;
-    border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer;
-  }
-  .btn-online {
-    background: var(--blue); color: #fff; border: none; padding: 15px;
-    border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer;
-  }
-  .btn-qr {
-    grid-column: span 2; background: var(--gold-light); color: var(--crimson-dark);
-    border: 1.5px solid var(--gold); padding: 10px; border-radius: 10px;
-    font-weight: 800; cursor: pointer; font-size: 14px;
-  }
+    /* Tab 1: Fast Bill Calculator */
+    .calc-display {
+      background: #FFFDF9; border: 2px solid var(--gold);
+      border-radius: 12px; padding: 12px 16px; text-align: right;
+      margin-bottom: 12px;
+    }
+    .calc-expr { font-size: 14px; color: var(--muted); min-height: 20px; }
+    .calc-total { font-size: 36px; font-weight: 900; color: var(--crimson); }
+    .numpad {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px;
+    }
+    .num-btn {
+      padding: 15px 0; font-size: 20px; font-weight: 700;
+      border-radius: 10px; border: 1px solid var(--border);
+      background: #fff; cursor: pointer; color: var(--text);
+    }
+    .num-btn.op { background: var(--gold-light); color: var(--crimson-dark); }
+    .num-btn:active { transform: scale(0.97); background: #f0e6d2; }
+    .pay-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn-cash {
+      background: var(--green); color: #fff; border: none; padding: 15px;
+      border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer;
+    }
+    .btn-online {
+      background: var(--blue); color: #fff; border: none; padding: 15px;
+      border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer;
+    }
+    .btn-qr {
+      grid-column: span 2; background: var(--gold-light); color: var(--crimson-dark);
+      border: 1.5px solid var(--gold); padding: 10px; border-radius: 10px;
+      font-weight: 800; cursor: pointer; font-size: 14px;
+    }
 
-  /* Tab 2: Festival Notes (Chopdo) */
-  .chopdo-header {
-    background: linear-gradient(90deg, var(--crimson), #b82525);
-    color: var(--gold-light); padding: 12px 14px; border-radius: 10px;
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 12px; border: 1px solid var(--gold);
-  }
-  .chopdo-title { font-size: 20px; font-weight: 900; }
-  .line-item {
-    background: var(--cream); border: 1px solid var(--border);
-    padding: 10px; border-radius: 10px; margin-bottom: 10px;
-  }
-  .total-banner {
-    background: #FFF9E6; border: 2px dashed var(--crimson);
-    padding: 12px; border-radius: 12px; margin: 12px 0;
-  }
-  .btn-primary {
-    width: 100%; background: var(--crimson); color: #fff;
-    border: none; padding: 14px; border-radius: 12px;
-    font-size: 16px; font-weight: 800; cursor: pointer;
-  }
+    /* Tab 2: Festival Notes (Chopdo) */
+    .chopdo-header {
+      background: linear-gradient(90deg, var(--crimson), #b82525);
+      color: var(--gold-light); padding: 12px 14px; border-radius: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px; border: 1px solid var(--gold);
+    }
+    .chopdo-title { font-size: 20px; font-weight: 900; }
+    .line-item {
+      background: var(--cream); border: 1px solid var(--border);
+      padding: 10px; border-radius: 10px; margin-bottom: 10px;
+    }
+    .total-banner {
+      background: #FFF9E6; border: 2px dashed var(--crimson);
+      padding: 12px; border-radius: 12px; margin: 12px 0;
+    }
+    .btn-primary {
+      width: 100%; background: var(--crimson); color: #fff;
+      border: none; padding: 14px; border-radius: 12px;
+      font-size: 16px; font-weight: 800; cursor: pointer;
+    }
 
-  /* Tab 3: Saved Bills */
-  .bill-card {
-    background: #fff; border: 1px solid var(--border);
-    border-left: 5px solid var(--crimson); border-radius: 12px;
-    padding: 12px; margin-bottom: 10px;
-  }
-  .badge {
-    font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 12px;
-  }
-  .badge.paid { background: #d4edda; color: #155724; }
-  .badge.pending { background: #fff3cd; color: #856404; }
-  .btn-wa {
-    background: #25D366; color: #fff; border: none; padding: 7px 12px;
-    border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
-  }
+    /* Tab 3: Saved Bills */
+    .bill-card {
+      background: #fff; border: 1px solid var(--border);
+      border-left: 5px solid var(--crimson); border-radius: 12px;
+      padding: 12px; margin-bottom: 10px;
+    }
+    .badge {
+      font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 12px;
+    }
+    .badge.paid { background: #d4edda; color: #155724; }
+    .badge.pending { background: #fff3cd; color: #856404; }
+    .btn-wa {
+      background: #25D366; color: #fff; border: none; padding: 7px 12px;
+      border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
+    }
 
-  /* Tab 4: Aaj No Hisab */
-  .hisab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .hisab-box {
-    padding: 14px; border-radius: 12px; color: #fff; text-align: center;
-  }
-  .hisab-box.cash { background: linear-gradient(135deg, #1E7E34, #28a745); }
-  .hisab-box.upi { background: linear-gradient(135deg, #0056B3, #007bff); }
-  .hisab-box.grand {
-    grid-column: span 2;
-    background: linear-gradient(135deg, var(--crimson-dark), var(--crimson));
-    border: 2px solid var(--gold);
-  }
-  .hisab-val { font-size: 26px; font-weight: 900; margin-top: 4px; }
+    /* Tab 4: Aaj No Hisab */
+    .hisab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .hisab-box {
+      padding: 14px; border-radius: 12px; color: #fff; text-align: center;
+    }
+    .hisab-box.cash { background: linear-gradient(135deg, #1E7E34, #28a745); }
+    .hisab-box.upi { background: linear-gradient(135deg, #0056B3, #007bff); }
+    .hisab-box.grand {
+      grid-column: span 2;
+      background: linear-gradient(135deg, var(--crimson-dark), var(--crimson));
+      border: 2px solid var(--gold);
+    }
+    .hisab-val { font-size: 26px; font-weight: 900; margin-top: 4px; }
 
-  /* Tab 5: Festival Target & Stock */
-  .subtab-bar { display: flex; gap: 8px; margin-bottom: 14px; }
-  .subtab-btn {
-    flex: 1; padding: 11px; border-radius: 10px; font-weight: 800;
-    border: 1.5px solid var(--crimson); background: #fff; color: var(--crimson);
-    cursor: pointer; font-size: 13px;
-  }
-  .subtab-btn.active { background: var(--crimson); color: #fff; }
-  .bar-wrap { margin: 10px 0; }
-  .bar-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 3px; }
-  .bar-bg { width: 100%; height: 14px; background: #eee; border-radius: 8px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 8px; transition: width 0.3s ease; }
-  .stock-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 0; border-bottom: 1px solid #f0e6d2; gap: 10px;
-  }
-  .stock-row input { width: 110px; margin: 0; text-align: right; font-weight: 700; }
+    /* Tab 5: Festival Target & Stock */
+    .subtab-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+    .subtab-btn {
+      flex: 1; padding: 11px; border-radius: 10px; font-weight: 800;
+      border: 1.5px solid var(--crimson); background: #fff; color: var(--crimson);
+      cursor: pointer; font-size: 13px;
+    }
+    .subtab-btn.active { background: var(--crimson); color: #fff; }
+    .bar-wrap { margin: 10px 0; }
+    .bar-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+    .bar-bg { width: 100%; height: 14px; background: #eee; border-radius: 8px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 8px; transition: width 0.3s ease; }
+    .stock-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0; border-bottom: 1px solid #f0e6d2; gap: 10px;
+    }
+    .stock-row input { width: 110px; margin: 0; text-align: right; font-weight: 700; }
 
-  /* Bottom Navigation */
-  .bottom-nav {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: #fff; border-top: 2px solid var(--gold);
-    display: flex; justify-content: space-around;
-    padding: 6px 2px; z-index: 200;
-    box-shadow: 0 -3px 10px rgba(0,0,0,0.08);
-  }
-  .nav-item {
-    flex: 1; text-align: center; padding: 6px 2px;
-    color: var(--muted); font-size: 11px; font-weight: 700;
-    cursor: pointer; border-radius: 8px;
-  }
-  .nav-item span { display: block; font-size: 18px; margin-bottom: 2px; }
-  .nav-item.active { color: var(--crimson); background: #FFF5E6; }
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #fff; border-top: 2px solid var(--gold);
+      display: flex; justify-content: space-around;
+      padding: 6px 2px; z-index: 200;
+      box-shadow: 0 -3px 10px rgba(0,0,0,0.08);
+    }
+    .nav-item {
+      flex: 1; text-align: center; padding: 6px 2px;
+      color: var(--muted); font-size: 11px; font-weight: 700;
+      cursor: pointer; border-radius: 8px;
+    }
+    .nav-item span { display: block; font-size: 18px; margin-bottom: 2px; }
+    .nav-item.active { color: var(--crimson); background: #FFF5E6; }
 
-  /* Modal */
-  .modal-backdrop {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-    z-index: 300; align-items: center; justify-content: center; padding: 16px;
-  }
-  .modal-backdrop.open { display: flex; }
-  .modal {
-    background: #fff; border-radius: 14px; max-width: 440px; width: 100%;
-    padding: 18px; max-height: 90vh; overflow-y: auto; border: 2px solid var(--gold);
-  }
-</style>
+    /* Modal */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      z-index: 300; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: #fff; border-radius: 14px; max-width: 440px; width: 100%;
+      padding: 18px; max-height: 90vh; overflow-y: auto; border: 2px solid var(--gold);
+    }
+  </style>
 </head>
 <body>
 
 <header>
   <div class="brand">
-    <div class="logo-badge">TF</div>
+    <img src="./logo.png" alt="Tulsi Farsan" class="brand-logo" onerror="this.style.display='none'" />
     <div class="brand-text">
       <h1>TULSI FARSAN & SWEETS</h1>
       <p>Sudama Chowk, Mota Varachha • 9712690781</p>
